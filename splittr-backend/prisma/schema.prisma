@@ -12,6 +12,7 @@ model User {
   userId        String       @unique
   email         String       @unique
   fullName      String
+  verified      Boolean      @default(false)
   transactions  Transaction[]
 }
 

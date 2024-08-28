@@ -4,6 +4,7 @@ const authController = require('../controllers/authController');
 
 router.post('/signup', authController.signUp);
 router.post('/verify', authController.confirmSignUp);
+router.post('/resend', authController.resendConfirmationCode);
 router.post('/signin', authController.signIn);
 router.post('/refresh', authController.refreshToken);
 

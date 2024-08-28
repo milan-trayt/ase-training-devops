@@ -20,6 +20,16 @@ async function confirmSignUp(req, res) {
   }
 }
 
+async function resendConfirmationCode(req, res) {
+  const { email } = req.body;
+  try {
+    await authService.resendConfirmationCode(email);
+    res.status(200).send('Confirmation code resent');
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+}
+
 async function signIn(req, res) {
   const { email, password } = req.body;
   try {
@@ -33,8 +43,8 @@ async function signIn(req, res) {
 async function refreshToken(req, res) {
   const { refreshToken } = req.body;
   try {
-    const { IdToken } = await authService.refreshToken(refreshToken);
-    res.status(200).send({ IdToken });
+    const { IdToken, AccessToken } = await authService.refreshToken(refreshToken);
+    res.status(200).send({ IdToken, AccessToken });
   } catch (error) {
     res.status(401).send(error.message);
   }
@@ -43,6 +53,7 @@ async function refreshToken(req, res) {
 module.exports = {
   signUp,
   confirmSignUp,
+  resendConfirmationCode,
   signIn,
   refreshToken,
 };

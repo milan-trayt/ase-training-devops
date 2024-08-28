@@ -1,15 +1,34 @@
 const prisma = require('../models/prismaClient');
 
 async function getTransactions(userId, startDate, endDate) {
-  return prisma.transaction.findMany({
+  const query = {
     where: {
       userId,
-      date: {
-        gte: new Date(startDate || new Date().setDate(1)),
-        lte: new Date(endDate || new Date()),
-      },
     },
-  });
+  };
+
+  if (startDate && !endDate) {
+    query.where.date = {
+      gte: new Date(startDate),
+      lte: new Date(),
+    };
+  }
+  
+  if (!startDate && endDate) {
+    query.where.date = {
+      gte: new Date('1970-01-01T00:00:00Z'),
+      lte: new Date(endDate),
+    };
+  }
+
+  if (startDate && endDate) {
+    query.where.date = {
+      gte: new Date(startDate),
+      lte: new Date(endDate),
+    };
+  }
+
+  return prisma.transaction.findMany(query);
 }
 
 async function createTransaction(userId, name, type, amount) {
