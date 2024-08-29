@@ -5,9 +5,9 @@ locals {
   api_replica_s3_buckets_object      = formatlist("%s/*", var.api_replica_s3_buckets_arn)
   sqsqueue_replica_s3_buckets_object = formatlist("%s/*", var.api_replica_s3_buckets_arn)
 
-  api_replica_s3_buckets      = concat(var.api_replica_s3_buckets_arn, local.api_replica_s3_buckets_object)
+  api_replica_s3_buckets = concat(var.api_replica_s3_buckets_arn, local.api_replica_s3_buckets_object)
 
-  api_secrets_arn     = var.api_secret_arn != null ? var.api_secret_arn : module.api_secrets[0].arn
+  api_secrets_arn = var.api_secret_arn != null ? var.api_secret_arn : module.api_secrets[0].arn
 
   api_container = [
     {
@@ -179,10 +179,10 @@ module "api_service" {
 
   log_retention_days = var.cloudwatch_log_retention_days
 
-  health_check_path   = "/"
-  container_port      = 443
-  alb_listener_arn    = module.alb.alb_https_listener_arn
-  alb_name            = module.alb.loadbalancer_name
+  health_check_path = "/"
+  container_port    = 443
+  alb_listener_arn  = module.alb.alb_https_listener_arn
+  alb_name          = module.alb.loadbalancer_name
 
   scale_min_capacity = var.api_service_scaling_parameter.scale_min_capacity
   scale_max_capacity = var.api_service_scaling_parameter.scale_max_capacity

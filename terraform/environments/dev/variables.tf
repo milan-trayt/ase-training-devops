@@ -60,32 +60,32 @@ variable "portal_bucket_name" {
 }
 
 variable "portal_bucket_replication" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Enable/Disable web portal's bucket replication"
 }
 
 variable "geo_restriction_type" {
-  type = string
-  default = "none"
+  type        = string
+  default     = "none"
   description = "Geo restriction type for the web portal"
 }
 
 variable "geo_restriction_location" {
-  type = list(string)
-  default = []
+  type        = list(string)
+  default     = []
   description = "Geo restriction location for the web portal"
 }
 
 variable "enforce_csp" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Enable/Disable Content Security Policy"
 }
 
 variable "content_security_policy" {
-  type = map(string)
-  default = {}
+  type        = map(string)
+  default     = {}
   description = "Content Security Policy for the web portal"
 }
 
@@ -94,8 +94,8 @@ variable "content_security_policy" {
 #################
 
 variable "cidr" {
-  type = string
-  default = "10.2.0.0/16"
+  type        = string
+  default     = "10.2.0.0/16"
   description = "CIDR block for the VPC"
 }
 
@@ -104,8 +104,8 @@ variable "cidr" {
 ############################
 
 variable "database_port" {
-  type = number
-  default = 9265
+  type        = number
+  default     = 9265
   description = "Port for the database"
 }
 
@@ -114,8 +114,8 @@ variable "database_port" {
 ########################
 
 variable "engine_version" {
-  type = string
-  default = "16.1"
+  type        = string
+  default     = "16.1"
   description = "Engine version for the Aurora RDS"
 }
 
