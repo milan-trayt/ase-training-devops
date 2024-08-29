@@ -337,3 +337,220 @@ data "aws_iam_policy_document" "ecs_alb_task_execution_policy_document" {
 
 }
 
+
+##CODEDEPLOY DEPLOYMENT 
+resource "aws_codedeploy_app" "this" {
+  count            = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  compute_platform = "ECS"
+  name             = "${var.name}-codedeploy"
+}
+
+resource "aws_codedeploy_deployment_group" "this" {
+  count                  = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  app_name               = aws_codedeploy_app.this[0].name
+  deployment_group_name  = "${var.name}-codedeploy"
+  deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
+  service_role_arn       = aws_iam_role.codedeploy_role[0].arn
+
+  dynamic "blue_green_deployment_config" {
+    for_each = var.alb_name != null ? [1] : []
+    content {
+      deployment_ready_option {
+        action_on_timeout = "CONTINUE_DEPLOYMENT"
+      }
+
+      terminate_blue_instances_on_deployment_success {
+        action                           = "TERMINATE"
+        termination_wait_time_in_minutes = 1
+      }
+    }
+  }
+
+  auto_rollback_configuration {
+    enabled = true
+    events  = ["DEPLOYMENT_FAILURE"]
+  }
+
+  ecs_service {
+    cluster_name = var.ecs_cluster_name
+    service_name = aws_ecs_service.default.name
+  }
+
+  deployment_style {
+    deployment_option = var.deployment_option
+    deployment_type   = var.deployment_type
+  }
+
+  dynamic "load_balancer_info" {
+    for_each = var.alb_name != null ? [1] : []
+    content {
+      target_group_pair_info {
+        prod_traffic_route {
+          listener_arns = [var.alb_listener_arn]
+        }
+
+        target_group {
+          name = aws_lb_target_group.default[1].name
+        }
+
+        target_group {
+          name = aws_lb_target_group.default[0].name
+        }
+      }
+    }
+  }
+
+  depends_on = [aws_iam_role.codedeploy_role[0]]
+}
+
+resource "aws_iam_role" "codedeploy_role" {
+  count = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  name  = "${var.name}-codedeploy-role"
+
+  assume_role_policy = data.aws_iam_policy_document.codedeploy_assume_role_policy[0].json
+
+}
+
+resource "aws_iam_role_policy" "codedeploy_policy" {
+  count = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  name  = "${var.name}-codedeploy-policy"
+  role  = aws_iam_role.codedeploy_role[0].id
+
+  policy = data.aws_iam_policy_document.codedeploy_policy_document[0].json
+}
+
+resource "aws_iam_role_policy" "codedeploy_policy_alb" {
+  count = var.alb_name != null ? 1 : 0
+  name  = "${var.name}-codedeploy-policy-alb"
+  role  = aws_iam_role.codedeploy_role[0].id
+
+  policy = data.aws_iam_policy_document.codedeploy_alb_policy_document[0].json
+}
+
+data "aws_iam_policy_document" "codedeploy_assume_role_policy" {
+  count = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["codedeploy.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "codedeploy_policy_document" {
+  count     = var.deployment_controller == "CODE_DEPLOY" ? 1 : 0
+  policy_id = "__default_policy_ID"
+
+  statement {
+    sid    = "AllowCodeDeploy"
+    effect = "Allow"
+
+    actions = [
+      "codedeploy:*",
+    ]
+
+    resources = [
+      "arn:aws:codedeploy:${var.region}:${data.aws_caller_identity.current.account_id}:deploymentconfig:CodeDeployDefault.ECSAllAtOnce",
+      aws_codedeploy_app.this[0].arn
+    ]
+  }
+
+  statement {
+    sid    = "AllowECR"
+    effect = "Allow"
+
+    actions = ["ecr:*"]
+
+    resources = var.ecr_repos_arn
+  }
+
+  statement {
+    sid    = "AllowECS"
+    effect = "Allow"
+
+    actions = ["ecs:*"]
+
+    resources = [
+      aws_ecs_service.default.id,
+      "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:cluster/${var.ecs_cluster_name}",
+      "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:task-definition/${aws_ecs_task_definition.default.family}:*",
+      "arn:aws:ecs:${var.region}:${data.aws_caller_identity.current.account_id}:task-set/${var.ecs_cluster_name}/*/*/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowECSCreateTaskSet"
+    effect = "Allow"
+
+    actions = [
+      "ecs:CreateTaskSet",
+      "ecs:DescribeService"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowPassRole"
+    effect = "Allow"
+
+    resources = ["*"]
+
+    actions = ["iam:PassRole"]
+
+    condition {
+      test     = "StringLike"
+      values   = ["ecs-tasks.amazonaws.com"]
+      variable = "iam:PassedToService"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "codedeploy_alb_policy_document" {
+  count     = var.alb_name != null ? 1 : 0
+  policy_id = "__default_policy_ID"
+
+  statement {
+    sid    = "AllowELB"
+    effect = "Allow"
+
+    actions = [
+      "elasticloadbalancing:*"
+    ]
+
+    resources = [
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:listener-rule/app/${var.alb_name}/*/*/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:listener-rule/net/${var.alb_name}/*/*/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:listener/app/${var.alb_name}/*/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:listener/net/${var.alb_name}/*/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:loadbalancer/app/${var.alb_name}/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:loadbalancer/net/${var.alb_name}/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:targetgroup/${aws_lb_target_group.default[0].name}/*",
+      "arn:aws:elasticloadbalancing:${var.region}:${data.aws_caller_identity.current.account_id}:targetgroup/${aws_lb_target_group.default[1].name}/*"
+    ]
+  }
+
+  statement {
+    sid    = "AllowELBDescribe"
+    effect = "Allow"
+
+    actions = [
+      "elasticloadbalancing:DescribeLoadBalancerAttributes",
+      "elasticloadbalancing:DescribeSSLPolicies",
+      "elasticloadbalancing:DescribeLoadBalancers",
+      "elasticloadbalancing:DescribeTargetGroupAttributes",
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeAccountLimits",
+      "elasticloadbalancing:DescribeTargetHealth",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeListenerCertificates",
+      "elasticloadbalancing:DescribeRules"
+    ]
+    resources = ["*"]
+  }
+
+}
