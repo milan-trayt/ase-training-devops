@@ -18,11 +18,6 @@ variable "portal_name" {
   description = "Name of the web portal. eg. clinician, access etc."
 }
 
-variable "portal_domain" {
-  type        = string
-  description = "Primary access domain for the web portal"
-}
-
 variable "portal_domain_aliases" {
   type        = list(string)
   default     = []
@@ -111,11 +106,6 @@ variable "disable_public_bucket" {
   type        = bool
   default     = true
   description = "If the public access to bucket should be disabled. Default true"
-}
-
-variable "ddb_table_prefix" {
-  type        = string
-  description = "Table Prefix For DynamoDB Table"
 }
 
 variable "content_security_policy" {

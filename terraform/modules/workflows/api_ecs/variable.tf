@@ -55,11 +55,6 @@ variable "vpc_id" {
   description = "VPC ID"
 }
 
-variable "api_urls" {
-  type        = list(string)
-  description = "Domain names to associate with the api"
-}
-
 variable "api_security_grp_ids" {
   type        = list(string)
   description = "Security group for the API service"

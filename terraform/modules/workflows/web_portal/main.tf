@@ -1,8 +1,7 @@
 locals {
   portal_repo = var.portal_repo != null ? var.portal_repo : "${var.portal_name}-portal"
-  pr_repos    = formatlist("repo:trayt-health/%s:*", var.pr_repos)
+  pr_repos    = formatlist("repo:milan-trayt/%s:*", var.pr_repos)
 
-  ddb_table_prefix              = var.ddb_table_prefix
   cloudfront_response_functions = []
   cloudfront_request_functions  = concat(var.index_file_server ? [aws_cloudfront_function.indexfile_server[0].arn] : [], var.portal_redirect_url != null ? [aws_cloudfront_function.redirect[0].arn] : [])
 
@@ -135,7 +134,6 @@ resource "aws_cloudfront_distribution" "portal" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 
-  aliases = distinct(concat([var.portal_domain], var.portal_domain_aliases))
   default_cache_behavior {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.default.id
     allowed_methods            = ["GET", "HEAD"]
@@ -290,25 +288,6 @@ module "portal" {
   }
 }
 
-### Certificate for the portal
-resource "aws_acm_certificate" "certificate" {
-  provider = aws.cloudfront_certificate
-
-  domain_name               = var.portal_domain
-  subject_alternative_names = setsubtract(var.portal_domain_aliases, [var.portal_domain])
-  validation_method         = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = {
-    Name        = join("-", [var.stage, var.project, var.module, var.portal_name, "portal-certificates"])
-    Description = "certificates for ${var.stage} ${var.portal_name} portal cloudfront"
-    Exposure    = "Private"
-  }
-}
-
 ### Secret for the portal
 module "portal_secrets" {
   source         = "./../../service/secrets_manager"
@@ -355,7 +334,7 @@ data "aws_iam_policy_document" "portal_github_action_assume_role_policy" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = var.portal_name == "pullrequest" ? local.pr_repos : (var.stage == "dev" || var.stage == "qa" ? ["repo:trayt-health/${local.portal_repo}:*", "repo:trayt-health/${local.portal_repo}:environment:*"] : (var.stage == "prod" ? ["repo:trayt-health/${local.portal_repo}:ref:refs/heads/master", "repo:trayt-health/${local.portal_repo}:environment:prod*"] : ["repo:trayt-health/${local.portal_repo}:ref:refs/heads/${var.stage}", "repo:trayt-health/${local.portal_repo}:environment:${var.stage}"]))
+      values   = var.portal_name == "pullrequest" ? local.pr_repos : (var.stage == "dev" ? ["repo:milan-trayt/${local.portal_repo}:*", "repo:milan-trayt/${local.portal_repo}:environment:*"] : (var.stage == "prod" ? ["repo:milan-trayt/${local.portal_repo}:ref:refs/heads/master", "repo:milan-trayt/${local.portal_repo}:environment:prod*"] : ["repo:milan-trayt/${local.portal_repo}:ref:refs/heads/${var.stage}", "repo:milan-trayt/${local.portal_repo}:environment:${var.stage}"]))
     }
   }
 }
@@ -407,19 +386,6 @@ data "aws_iam_policy_document" "portal_github_action_policy_document" {
 
     resources = [
       "${aws_cloudfront_distribution.portal.arn}"
-    ]
-  }
-
-  statement {
-    sid    = "dynamodb"
-    effect = "Allow"
-
-    actions = [
-      "dynamodb:UpdateItem"
-    ]
-
-    resources = [
-      "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${local.ddb_table_prefix}_ClientApps"
     ]
   }
 
