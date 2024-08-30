@@ -8,16 +8,6 @@ variable "ec2_hostname" {
   description = "Ec2 instance hostname"
 }
 
-variable "ami_owners" {
-  type        = list(string)
-  description = "List of owners to search the AMI in"
-}
-
-variable "ami_filter_name" {
-  type        = list(string)
-  description = "value of the name filter to search the AMI"
-}
-
 variable "cluster_name" {
   type        = string
   description = "Name of ECS cluster to associate the Ec2 instance with"

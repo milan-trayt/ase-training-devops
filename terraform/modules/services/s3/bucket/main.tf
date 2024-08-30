@@ -79,12 +79,6 @@ resource "aws_s3_bucket_public_access_block" "default" {
   restrict_public_buckets = var.restrict_public_buckets
 }
 
-resource "aws_s3_bucket_acl" "this" {
-  count  = var.acl_enabled == true ? 1 : 0
-  bucket = aws_s3_bucket.default.id
-  acl    = "private"
-}
-
 resource "aws_s3_bucket_server_side_encryption_configuration" "this" {
   bucket = aws_s3_bucket.default.id
 

@@ -3,7 +3,6 @@ locals {
   pr_repos    = formatlist("repo:milan-trayt/%s:*", var.pr_repos)
 
   cloudfront_response_functions = []
-  cloudfront_request_functions  = concat(var.index_file_server ? [aws_cloudfront_function.indexfile_server[0].arn] : [], var.portal_redirect_url != null ? [aws_cloudfront_function.redirect[0].arn] : [])
 
   block_public_acls       = var.disable_public_bucket
   block_public_policy     = var.disable_public_bucket
@@ -18,84 +17,6 @@ data "aws_region" "current" {}
 provider "aws" {
   alias  = "cloudfront_certificate"
   region = "us-east-1"
-}
-resource "aws_cloudfront_function" "indexfile_server" {
-  count = var.index_file_server ? 1 : 0
-
-  name    = join("-", [var.stage, var.project, var.module, var.portal_name, "indexfile-server"])
-  runtime = "cloudfront-js-1.0"
-  comment = "append index.html to request if doesn't exist"
-  publish = true
-  code    = file("./cloudfront_functions/pullrequest-viewer-request.js")
-}
-
-resource "aws_cloudfront_function" "redirect" {
-  count = var.portal_redirect_url != null ? 1 : 0
-
-  name    = join("-", [var.stage, var.project, var.module, var.portal_name, "redirect"])
-  runtime = "cloudfront-js-1.0"
-  comment = "Function to manipulate/handle viewer requests for ${var.stage} ${var.portal_name} portal"
-  publish = true
-  code    = templatefile("./cloudfront_functions/redirect.tftpl", { portal_redirect_url = var.portal_redirect_url })
-
-}
-
-resource "aws_cloudfront_response_headers_policy" "default" {
-  name = join("-", [var.stage, var.project, var.module, var.portal_name, "response-headers"])
-
-  custom_headers_config {
-    items {
-      header   = "server"
-      override = true
-      value    = "none"
-    }
-
-    dynamic "items" {
-      for_each = var.enforce_csp ? [] : [1]
-      content {
-        header   = "content-security-policy-report-only"
-        override = true
-        value    = local.content_security_policy
-      }
-    }
-  }
-
-  security_headers_config {
-    strict_transport_security {
-      access_control_max_age_sec = "63072000"
-      include_subdomains         = true
-      override                   = true
-      preload                    = true
-    }
-    content_type_options {
-      override = true
-    }
-
-    frame_options {
-      frame_option = "DENY"
-      override     = true
-    }
-
-    xss_protection {
-      mode_block = true
-      override   = true
-      protection = true
-    }
-
-    referrer_policy {
-      referrer_policy = "strict-origin-when-cross-origin"
-      override        = true
-    }
-
-    dynamic "content_security_policy" {
-      for_each = var.enforce_csp ? [1] : []
-      content {
-        content_security_policy = local.content_security_policy
-        override                = false
-      }
-    }
-
-  }
 }
 
 ## CLOUDFRONT Distribution###
@@ -135,44 +56,21 @@ resource "aws_cloudfront_distribution" "portal" {
   default_root_object = "index.html"
 
   default_cache_behavior {
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.default.id
-    allowed_methods            = ["GET", "HEAD"]
-    cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = module.portal.bucket_id
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = module.portal.bucket_id
 
     cache_policy_id        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
     viewer_protocol_policy = "redirect-to-https"
     compress               = true
 
-    dynamic "function_association" {
-      for_each = local.cloudfront_request_functions
-      content {
-        event_type   = "viewer-request"
-        function_arn = function_association.value
-      }
-    }
-
-    dynamic "function_association" {
-      for_each = local.cloudfront_response_functions
-      content {
-        event_type   = "viewer-response"
-        function_arn = function_association.value
-      }
-    }
   }
 
   price_class = "PriceClass_100"
   web_acl_id  = var.waf_arn
 
-  logging_config {
-    include_cookies = false
-    bucket          = join(".", [var.portal_access_log_bucket_name, "s3.amazonaws.com"])
-    prefix          = join("_", ["cloudfront", var.portal_name, "portal"])
-  }
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.certificate.arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
+    cloudfront_default_certificate = true
   }
 
   restrictions {
@@ -191,7 +89,7 @@ resource "aws_cloudfront_distribution" "portal" {
 
 ### S3 Bucket to host the frontend
 module "portal" {
-  source = "./../../service/s3/bucket"
+  source = "./../../services/s3/bucket"
 
   bucket_name = var.portal_bucket_name
 
@@ -290,7 +188,7 @@ module "portal" {
 
 ### Secret for the portal
 module "portal_secrets" {
-  source         = "./../../service/secrets_manager"
+  source         = "./../../services/secrets_manager"
   name           = "${var.stage}-${var.portal_name}-portal"
   replica_region = var.secret_replica_region
 

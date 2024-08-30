@@ -5,7 +5,7 @@ variable "name" {
 
 variable "recovery_window_in_days" {
   type        = number
-  default     = 7
+  default     = 0
   description = "Number of days to retain secret after deletion"
 }
 

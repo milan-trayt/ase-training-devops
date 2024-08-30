@@ -193,7 +193,7 @@ variable "deployment_type" {
 
 variable "container_name" {
   type        = string
-  default     = "nginx"
+  default     = "api"
   description = "Default container to expose to the loadbalancer in ECS"
 }
 

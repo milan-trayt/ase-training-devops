@@ -3,11 +3,6 @@ variable "name" {
   description = "Alb Name"
 }
 
-variable "certificate_arn" {
-  type        = string
-  description = "ssl certificate arn for loadbalancer"
-}
-
 variable "internal_loadbalancer" {
   type    = bool
   default = false
@@ -47,6 +42,6 @@ variable "ssl_policy" {
 
 variable "alb_deletion_protection" {
   type        = bool
-  default     = true
+  default     = false
   description = "Enable/Disable deletion protection for ALB"
 }

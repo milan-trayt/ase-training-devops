@@ -10,22 +10,6 @@ echo "$parsed_json" > /etc/datadog-agent/environment
 sudo systemctl restart datadog-agent
 EOF
 }
-
-data "aws_ami" "ecs_optimized_ec2" {
-  most_recent = true
-  owners      = var.ami_owners
-
-  filter {
-    name   = "name"
-    values = var.ami_filter_name
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
 resource "aws_autoscaling_group" "this" {
   name                  = join("-", [var.name, "asg"])
   vpc_zone_identifier   = var.subnet_ids
@@ -67,7 +51,7 @@ resource "aws_ecs_capacity_provider" "this" {
 
 resource "aws_launch_template" "this" {
   name_prefix            = join("-", [var.name, "ecs-launch-template"])
-  image_id               = var.ec2_image_id == null ? data.aws_ami.ecs_optimized_ec2.id : var.ec2_image_id
+  image_id               = var.ec2_image_id
   instance_type          = var.ec2_instance_type
   key_name               = var.ec2_key_name
   vpc_security_group_ids = var.security_grp_ids

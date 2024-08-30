@@ -12,9 +12,7 @@ locals {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block           = var.cidr
-  enable_dns_support   = var.enable_dns_support
-  enable_dns_hostnames = var.enable_dns_hostnames
+  cidr_block = var.cidr
 
   tags = local.tags
 }
@@ -333,4 +331,63 @@ resource "aws_flow_log" "this" {
   vpc_id          = aws_vpc.main.id
 
   tags = local.tags
+}
+
+resource "aws_cloudwatch_log_group" "flow_log" {
+  count = var.enable_flow_log ? 1 : 0
+
+  name              = "${local.name}-flow-log"
+  retention_in_days = var.flow_log_retention
+
+  tags = local.tags
+}
+
+resource "aws_iam_role" "this" {
+  count = var.enable_flow_log ? 1 : 0
+
+  name               = "${local.name}-flow-log-role"
+  assume_role_policy = data.aws_iam_policy_document.vpc_flow_log_assume_role_policy.json
+
+  tags = local.tags
+}
+
+resource "aws_iam_role_policy" "this" {
+  count = var.enable_flow_log ? 1 : 0
+
+  name   = "${local.name}-flow-log-policy"
+  role   = aws_iam_role.this[0].id
+  policy = data.aws_iam_policy_document.cloudwatch_log_policy.json
+}
+
+data "aws_iam_policy_document" "vpc_flow_log_assume_role_policy" {
+  policy_id = "__default_policy_ID"
+
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "cloudwatch_log_policy" {
+  policy_id = "__default_policy_ID"
+
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+      "logs:DescribeLogGroups",
+      "logs:DescribeLogStreams",
+    ]
+
+    effect = "Allow"
+    resources = [
+      "*",
+    ]
+  }
 }

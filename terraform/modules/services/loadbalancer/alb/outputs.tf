@@ -19,7 +19,7 @@ output "domain_name" {
 }
 
 output "alb_https_listener_arn" {
-  value       = aws_alb_listener.default_https.arn
+  value       = aws_lb_listener.default_https.arn
   sensitive   = true
   description = "arn for lb https listener"
   depends_on  = []

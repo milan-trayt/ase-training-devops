@@ -2,11 +2,6 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  api_replica_s3_buckets_object      = formatlist("%s/*", var.api_replica_s3_buckets_arn)
-  sqsqueue_replica_s3_buckets_object = formatlist("%s/*", var.api_replica_s3_buckets_arn)
-
-  api_replica_s3_buckets = concat(var.api_replica_s3_buckets_arn, local.api_replica_s3_buckets_object)
-
   api_secrets_arn = var.api_secret_arn != null ? var.api_secret_arn : module.api_secrets[0].arn
 
   api_container = [
@@ -16,6 +11,12 @@ locals {
       "essential" : true,
       "cpu" : 256,
       "memoryReservation" : 512,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 443
+        }
+      ],
       "readonlyRootFilesystem" : false,
       "logConfiguration" : {
         "logDriver" : "awslogs",
@@ -69,13 +70,12 @@ locals {
 
 ##Cluster Loadbalancer##
 module "alb" {
-  source = "./../../service/loadbalancer/alb"
+  source = "./../../services/loadbalancer/alb"
   name   = join("-", [var.stage, var.project, var.module, "alb"])
 
   internal_loadbalancer = false
   lb_subnet_ids         = var.lb_subnet_ids
   lb_security_grp_ids   = var.lb_security_grp_ids
-  certificate_arn       = aws_acm_certificate.api_certificate.arn
 
   elb_logs_bucket_versioning = var.elb_logs_bucket_versioning
 
@@ -91,7 +91,7 @@ module "alb" {
 ##Container Registry##
 
 module "api_ecr" {
-  source = "./../../service/ecs/ecr"
+  source = "./../../services/ecs/ecr"
 
   name = join("-", [var.stage, var.project, var.module, "api"])
 
@@ -106,7 +106,7 @@ module "api_ecr" {
 
 module "api_secrets" {
   count          = var.api_secret_arn != null ? 0 : 1
-  source         = "./../../service/secrets_manager"
+  source         = "./../../services/secrets_manager"
   name           = "${var.stage}-api"
   replica_region = var.api_secret_replica_region
 
@@ -123,10 +123,9 @@ resource "aws_key_pair" "ssh-key" {
 }
 
 module "api_capacity_provider" {
-  source = "./../../service/ecs/capacityprovider"
+  source = "./../../services/ecs/capacityprovider"
 
-  ami_filter_name   = [var.ami]
-  ami_owners        = ["self", "865507631627"]
+  ec2_image_id      = var.ec2_image_id
   name              = join("-", [var.stage, var.project, var.module, "ondemand"])
   cluster_name      = join("-", [var.stage, var.project, var.module, "api-cluster"])
   ec2_hostname      = join("-", [var.stage, var.project, var.module, "api"])
@@ -144,15 +143,18 @@ module "api_capacity_provider" {
   tags = {
     Name        = join("-", [var.stage, var.project, var.module, "api-cluster"])
     Exposure    = "private"
+    Creator     = "milanpokhrel@lftechnology.com"
+    Project     = var.project
+    Deletable   = "Yes"
     Description = "api ecs cluster for ${var.stage} environment"
   }
 }
 
 module "cluster" {
-  source = "./../../service/ecs/cluster"
+  source = "./../../services/ecs/cluster"
 
   name               = join("-", [var.stage, var.project, var.module, "api-cluster"])
-  capacity_providers = [module.api_capacity_provider.name, module.sqsqueue_capacity_provider.name]
+  capacity_providers = [module.api_capacity_provider.name]
 
   tags = {
     Name        = join("-", [var.stage, var.project, var.module, "api-cluster"])
@@ -162,7 +164,7 @@ module "cluster" {
 }
 
 module "api_service" {
-  source = "./../../service/ecs/service"
+  source = "./../../services/ecs/service"
 
   name          = join("-", [var.stage, var.project, var.module, "api"])
   region        = data.aws_region.current.name
@@ -262,19 +264,11 @@ resource "aws_iam_role_policy_attachment" "api_ecs_task_policy_attachment" {
 }
 
 module "api_iam_policy" {
-  source = "./../../service/iam/iam_policy"
+  source = "./../../services/iam/iam_policy"
   permission_sets = [
     {
       action    = "secretsManagerAccess"
       resources = [local.api_secrets_arn]
-    },
-    {
-      action    = "s3FullAccess"
-      resources = local.api_s3_buckets
-    },
-    {
-      action    = "s3FullAccess"
-      resources = local.api_replica_s3_buckets
     },
     {
       action    = "sesAccess"

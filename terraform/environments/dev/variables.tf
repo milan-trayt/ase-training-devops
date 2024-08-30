@@ -25,10 +25,10 @@ variable "logs_bucket_force_destroy" {
   description = "Force destroy the bucket"
 }
 
-variable "logs_bucket_replication" {
-  type        = bool
-  default     = false
-  description = "Enable/Disable bucket replication"
+variable "logs_bucket_replication_configuration" {
+  description = "Map containing cross-region replication configuration."
+  type        = any
+  default     = {}
 }
 
 variable "logs_bucket_versioning" {
@@ -119,3 +119,12 @@ variable "engine_version" {
   description = "Engine version for the Aurora RDS"
 }
 
+#################
+# ECS Variables #
+#################
+
+variable "ec2_image_id" {
+  type        = string
+  description = "AMI ID for the ECS cluster"
+  default     = "ami-066784287e358dad1"
+}

@@ -40,9 +40,10 @@ variable "api_secret_replica_region" {
   description = "Region to replicate the api secrets to"
 }
 
-variable "ami" {
+variable "ami_filter_name" {
   type        = string
-  description = "Ec2 AMI"
+  description = "AMI filter name"
+  default     = "ecs-ami-1.0.18"
 }
 
 variable "ssh_public_key" {
@@ -148,4 +149,15 @@ variable "task_policies" {
   type        = list(string)
   default     = []
   description = "List of additional policy documents to attach to the ECS task role"
+}
+
+variable "cloudwatch_log_retention_days" {
+  type        = number
+  default     = 0
+  description = "Number of days to retain logs in cloudwatch"
+}
+
+variable "ec2_image_id" {
+  type        = string
+  description = "The EC2 image ID to launch."
 }

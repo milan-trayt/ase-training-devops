@@ -18,10 +18,10 @@ module "waf" {
 }
 
 module "cloudfront_logs_bucket" {
-  source = "../../modules/services/s3/bucket"
-
+  source                    = "../../modules/services/s3/bucket"
+  acl_enabled               = true
   force_destroy             = var.logs_bucket_force_destroy
-  replication_configuration = var.logs_bucket_replication
+  replication_configuration = var.logs_bucket_replication_configuration
   versioning                = var.logs_bucket_versioning
   bucket_name               = var.logs_bucket_name
   lifecycle_rules = [
@@ -50,8 +50,8 @@ module "web_portal" {
   portal_name        = var.portal_name
   portal_bucket_name = var.portal_bucket_name
 
-  oidc_provider_arn             = module.github_oidc.oidc_provider_arn
-  waf_arn                       = module.waf.waf_arn
+  oidc_provider_arn             = module.github_oidc.arn
+  waf_arn                       = module.waf.arn
   portal_access_log_bucket_name = module.cloudfront_logs_bucket.bucket_name
 
   portal_bucket_replication = var.portal_bucket_replication
@@ -91,14 +91,14 @@ module "rds_aurora" {
   instance_class              = "db.serverless"
   secret_recovery_window_days = 0
   serverlessv2_scaling_configuration = {
-    min_capacity = 0.2
+    min_capacity = 0.5
     max_capacity = 2
   }
   instances = {
     postgres1 = {}
   }
-  database_name                     = "milan-splittr"
-  master_username                   = "milan-splittr"
+  database_name                     = "devmilan"
+  master_username                   = "milan"
   engine_version                    = var.engine_version
   db_cluster_parameter_group_family = "aurora-postgresql16"
   allow_major_version_upgrade       = true
@@ -109,16 +109,6 @@ module "rds_aurora" {
   security_group_ids                = [module.security_group.sg_postgres]
 }
 
-module "ecr" {
-  source = "../../modules/services/ecs/ecr"
-  name   = "milan-splittr-ecr"
-  tags = {
-    Name        = join("-", [local.env_vars.stage, local.env_vars.project, local.env_vars.module, "api"])
-    Exposure    = "private"
-    Description = "Api image for ${local.env_vars.stage} environment"
-  }
-}
-
 module "api" {
   source = "../../modules/workflows/api_ecs"
 
@@ -127,8 +117,7 @@ module "api" {
   module        = var.module
   domain_prefix = var.stage
 
-  ami           = "ecs-ami-1.0.18"
-  ecr_repos_arn = module.ecr.arn
+  ec2_image_id  = var.ec2_image_id
 
   oidc_provider_arn = module.github_oidc.arn
 
