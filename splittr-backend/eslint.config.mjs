@@ -1,8 +1,4 @@
-import prettier from "eslint-plugin-prettier";
-import security from "eslint-plugin-security";
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
@@ -16,101 +12,80 @@ const compat = new FlatCompat({
     allConfig: js.configs.all
 });
 
-export default [
-    ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
-    {
-        plugins: {
-            prettier,
-            security,
-            "@typescript-eslint": typescriptEslint,
+export default [...compat.extends("eslint:recommended"), {
+    languageOptions: {
+        globals: {
+            ...globals.node,
+            ...globals.commonjs,
+            ...globals.jest,
         },
 
-        languageOptions: {
-            globals: {
-                ...globals.jest,
-                ...globals.node,
-            },
-
-            parser: tsParser,
-            ecmaVersion: 2020,
-            sourceType: "module",
-        },
-
-        rules: {
-            "prettier/prettier": "error",
-            semi: ["warn", "never"],
-
-            "newline-per-chained-call": ["off", {
-                ignoreChainWithDepth: 2,
-            }],
-
-            "global-require": "off",
-            "arrow-parens": "off",
-            "arrow-body-style": "off",
-            "comma-dangle": "off",
-            "func-names": "off",
-            "no-use-before-define": "off",
-            camelcase: "off",
-            "no-plusplus": "off",
-            "consistent-return": "off",
-            "security/detect-object-injection": "off",
-            "security/detect-non-literal-fs-filename": "off",
-
-            "no-unused-vars": ["error", {
-                vars: "all",
-                args: "all",
-                argsIgnorePattern: "^_",
-                caughtErrors: "all",
-                caughtErrorsIgnorePattern: "^_",
-                destructuredArrayIgnorePattern: "^_",
-                varsIgnorePattern: "^_",
-                ignoreRestSiblings: true,
-            }],
-
-            "prefer-destructuring": ["off", {
-                array: true,
-                object: true,
-            }, {
-                enforceForRenamedProperties: false,
-            }],
-
-            "@typescript-eslint/no-unused-vars": ["error", {
-                args: "all",
-                argsIgnorePattern: "^_",
-                caughtErrors: "all",
-                caughtErrorsIgnorePattern: "^_",
-                destructuredArrayIgnorePattern: "^_",
-                varsIgnorePattern: "^_",
-                ignoreRestSiblings: true,
-            }],
-        },
+        ecmaVersion: 12,
+        sourceType: "commonjs",
     },
-    {
-        files: ["**/*.ts", "**/*.tsx"],
 
-        languageOptions: {
-            parser: tsParser,
-            ecmaVersion: 5,
-            sourceType: "script",
+    rules: {
+        "no-console": "warn",
+        "no-undef": "error",
+        semi: "error",
+        "semi-spacing": "error",
+        eqeqeq: "warn",
+        "no-invalid-this": "error",
+        "no-return-assign": "error",
 
-            parserOptions: {
-                project: "./tsconfig.json",
-            },
-        },
+        "no-unused-expressions": ["error", {
+            allowTernary: true,
+        }],
 
-        rules: {
-            "@typescript-eslint/ban-ts-comment": "off",
-            "no-unused-vars": "off",
-            semi: "off",
-        },
+        "no-useless-concat": "error",
+        "no-useless-return": "error",
+        "no-constant-condition": "warn",
+
+        "no-unused-vars": ["warn", {
+            argsIgnorePattern: "req|res|next|__",
+        }],
+
+        indent: ["error", 2, {
+            SwitchCase: 1,
+        }],
+
+        "no-mixed-spaces-and-tabs": "warn",
+        "space-before-blocks": "error",
+        "space-in-parens": "error",
+        "space-infix-ops": "error",
+        "space-unary-ops": "error",
+        quotes: ["error", "single"],
+
+        "max-len": ["error", {
+            code: 200,
+        }],
+
+        "max-lines": ["error", {
+            max: 500,
+        }],
+
+        "keyword-spacing": "error",
+        "multiline-ternary": ["error", "never"],
+        "no-mixed-operators": "error",
+
+        "no-multiple-empty-lines": ["error", {
+            max: 2,
+            maxEOF: 1,
+        }],
+
+        "no-whitespace-before-property": "error",
+        "nonblock-statement-body-position": "error",
+
+        "object-property-newline": ["error", {
+            allowAllPropertiesOnSameLine: true,
+        }],
+
+        "arrow-spacing": "error",
+        "no-confusing-arrow": "error",
+        "no-duplicate-imports": "error",
+        "no-var": "error",
+        "object-shorthand": "off",
+        "prefer-const": "error",
+        "prefer-template": "warn",
     },
-    {
-        files: ["**/*.js", "**/*.jsx"],
-
-        rules: {
-            "@typescript-eslint/no-var-requires": "off",
-            "@typescript-eslint/no-unused-vars": "off",
-            "@typescript-eslint/explicit-module-boundary-types": "off",
-        },
-    },
-];
+}];
