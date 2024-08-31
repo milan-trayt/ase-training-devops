@@ -1,0 +1,108 @@
+name: ECS Build And Deploy
+
+on:
+  workflow_call:
+    inputs:
+      AWS_ROLE:
+        required: true
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
+      SECRET_ID:
+        required: true
+        type: string
+      RUN_SCHEMA_MIGRATION:
+        type: boolean
+        default: true
+      ENVIRONMENT:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.AWS_ROLE }}
+          role-duration-seconds: 900
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: Fetch Secrets
+        uses: trayt-health/asm-secrets-action@v1.0
+        with:
+          secret-id: ${{ inputs.SECRET_ID }}
+
+      - name: Docker Login
+        run: aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${REGISTRY_URI}
+
+      - name: Build Image
+        run: |
+          docker build . -t ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG} --build-arg REGISTRY_URI=${REGISTRY_URI} --build-arg SECRET_PREFIX=${SECRET_PREFIX} --build-arg AWS_REGION=${AWS_REGION}
+
+      - name: Push Image
+        run: docker push ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG}
+
+  deploy_api:
+    environment: ${{ inputs.ENVIRONMENT }}
+    name: Deploy API
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.AWS_ROLE }}
+          role-duration-seconds: 900
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: Fetch Secrets
+        uses: trayt-health/asm-secrets-action@v1.0
+        with:
+          secret-id: ${{ inputs.SECRET_ID }}
+
+      - name: Compose AppSpec
+        run: |
+          export AWS_ECS_TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition ${AWS_ECS_TASK_DEFINITION} --region ${AWS_REGION} | jq '.taskDefinition.taskDefinitionArn') && \
+          envsubst < code-deploy.yaml.sample | tee code-deploy.yaml
+
+      - name: Update ASG and Deploy API
+        run: |
+          set -e
+          # Get desired capacity
+          desired_capacity=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $API_AUTOSCALING_GROUP --query "AutoScalingGroups[0].DesiredCapacity" --output text)
+
+          # Calculate total
+          total=$((3 * desired_capacity))
+
+          # Update Auto Scaling Group max size
+          if [[ $API_AUTOSCALING_DEFAULT_MAX_CAPACITY -le $total ]]; then
+            echo "Updating max capacity to $total"
+            aws autoscaling update-auto-scaling-group --auto-scaling-group-name $API_AUTOSCALING_GROUP --max-size $total
+          else
+            echo "Max capacity satisfied"
+          fi
+
+          # Create deployment and wait for completion
+          deployment_id=$(aws deploy create-deployment --cli-input-yaml file://code-deploy.yaml --region $AWS_REGION | jq -r .deploymentId)
+          sleep 10
+          while [[ "$(aws deploy get-deployment --deployment-id $deployment_id --query "deploymentInfo.status" --output text)" == "InProgress" ]]; do
+            echo "Deployment in progress.."
+            sleep 15
+          done
+          echo "Deployment Status: $(aws deploy get-deployment --deployment-id $deployment_id --query "deploymentInfo.status" --output text)"
+
+      - name: Update Auto Scaling Group max size to default
+        if: always()
+        run: |
+          echo "Set max capacity to default value"
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name $API_AUTOSCALING_GROUP --max-size $API_AUTOSCALING_DEFAULT_MAX_CAPACITY
