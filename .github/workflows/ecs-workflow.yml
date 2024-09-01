@@ -41,8 +41,8 @@ jobs:
           echo $REGISTRY_URI
 
       - name: Docker Login
-        run: aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${REGISTRY_URI}
-
+        run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 949263681218.dkr.ecr.us-east-1.amazonaws.com
+        
       - name: Build Image
         run: |
           docker build . -t ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG} --build-arg REGISTRY_URI=${REGISTRY_URI} --build-arg SECRET_PREFIX=${SECRET_PREFIX} --build-arg AWS_REGION=${AWS_REGION}  --build-arg RUN_SCHEMA_MIGRATION=${RUN_SCHEMA_MIGRATION} --build-arg DATABASE_URL=${DATABASE_URL}
