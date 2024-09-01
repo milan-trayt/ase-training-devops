@@ -1,4 +1,4 @@
-name: Build And Deploy To ECS
+name: Build And Deploy Frontend
 
 on:
   push:
@@ -35,4 +35,4 @@ jobs:
           cd splittr-frontend
           npm install
           npm run build
-          aws s3 sync build s3://splittr-webportal-dev
+          aws s3 sync dist s3://splittr-webportal-dev
