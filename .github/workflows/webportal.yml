@@ -32,15 +32,15 @@ jobs:
         id: fetch_secrets
         run: |
           aws secretsmanager get-secret-value --secret-id dev-web-portal | jq -r '.SecretString' > secrets.json
-          while IFS="=" read -r key value; do
-            echo "${key}=${value}" >> $GITHUB_ENV
-          done < <(jq -r 'to_entries[] | "\(.key)=\(.value)"' secrets.json)
+          jq -r 'to_entries[] | "\(.key)=\(.value)"' secrets.json > .env
 
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build and Deploy to Dev
         run: |
+          cp .env splittr-frontend/.env
           cd splittr-frontend
           npm install
           npm run build
           aws s3 sync dist s3://milan-splittr-web-portal
+          aws cloudfront create-invalidation --distribution-id E4MICCGF0JIPS --paths "/*"
