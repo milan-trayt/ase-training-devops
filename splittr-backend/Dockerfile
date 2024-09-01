@@ -21,6 +21,7 @@ ENV AWS_REGION=${AWS_REGION}
 ENV DATABASE_URL=${DATABASE_URL}
 
 RUN apk add --no-cache bash
+RUN apk add --no-cache aws-cli
 
 EXPOSE 3000
 CMD ["/bin/bash","entrypoint.sh"]
