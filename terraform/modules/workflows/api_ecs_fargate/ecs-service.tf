@@ -5,10 +5,10 @@ resource "aws_ecs_service" "ECS-Service" {
   cluster                            = aws_ecs_cluster.ECS.id
   task_definition                    = aws_ecs_task_definition.TD.arn
   scheduling_strategy                = "REPLICA"
-  desired_count                      = 2
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
-  depends_on                         = [aws_alb_listener.Listener, aws_iam_role.iam-role]
+  depends_on                         = [aws_alb_listener.Listener, aws_iam_role.task_execution_role, aws_iam_role.task_role]
 
 
   load_balancer {

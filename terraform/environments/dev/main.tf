@@ -158,17 +158,17 @@ module "rds_aurora" {
 # }
 
 module "api" {
-  source               = "../../modules/workflows/api_ecs_fargate"
-  vpc_id               = module.vpc.vpc_id
-  api_security_grp_ids = [module.security_group.sg_api]
-  lb_security_grp_ids  = [module.security_group.sg_alb]
-  subnet_id            = module.vpc.private_subnet
-  stage                = var.stage
-  project              = var.project
-  module               = var.module
-  api_secret_arn       = null
-  oidc_provider_arn    = module.github_oidc.arn
-  api_secret_replica_region = []
+  source                         = "../../modules/workflows/api_ecs_fargate"
+  vpc_id                         = module.vpc.vpc_id
+  api_security_grp_ids           = [module.security_group.sg_api]
+  lb_security_grp_ids            = [module.security_group.sg_alb]
+  subnet_id                      = module.vpc.private_subnet
+  stage                          = var.stage
+  project                        = var.project
+  module                         = var.module
+  api_secret_arn                 = null
+  oidc_provider_arn              = module.github_oidc.arn
+  api_secret_replica_region      = []
   rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
-  ecr_repos_arn = []
+  ecr_repos_arn                  = []
 }

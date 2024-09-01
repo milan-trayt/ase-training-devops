@@ -9,10 +9,17 @@ module "api_ecr" {
     Description = "api ecr repository for ${var.stage} environment"
   }
 }
+
+resource "aws_cloudwatch_log_group" "this" {
+  name              = "/ecs/${var.stage}-milan-splittr-health-api"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "TD" {
-  family                   = "nodejs-app"
+  family                   = "milan-splittr-ecs-td"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = aws_iam_role.iam-role.arn
+  execution_role_arn       = aws_iam_role.task_execution_role.arn
+  task_role_arn            = aws_iam_role.task_role.arn
   network_mode             = "awsvpc"
   cpu                      = 1024
   memory                   = 2048
@@ -23,10 +30,10 @@ resource "aws_ecs_task_definition" "TD" {
       "essential" : true,
       "cpu" : 256,
       "memoryReservation" : 512,
-      "portMappings": [
+      "portMappings" : [
         {
-          "containerPort": 3000,
-          "hostPort": 3000
+          "containerPort" : 3000,
+          "hostPort" : 3000
         }
       ],
       "readonlyRootFilesystem" : false,

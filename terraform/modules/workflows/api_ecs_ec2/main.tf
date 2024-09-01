@@ -11,10 +11,10 @@ locals {
       "essential" : true,
       "cpu" : 256,
       "memoryReservation" : 512,
-      "portMappings": [
+      "portMappings" : [
         {
-          "containerPort": 443,
-          "hostPort": 443
+          "containerPort" : 443,
+          "hostPort" : 443
         }
       ],
       "readonlyRootFilesystem" : false,
