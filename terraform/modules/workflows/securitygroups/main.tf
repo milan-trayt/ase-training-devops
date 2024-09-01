@@ -12,9 +12,26 @@ resource "aws_security_group" "sg_alb" {
     ipv6_cidr_blocks = ["::/0"]
   }
 
+  ingress {
+    description      = "http access"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
   egress {
     from_port        = 443
     to_port          = 443
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  egress {
+    from_port        = 80
+    to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -44,6 +61,14 @@ resource "aws_security_group" "sg_api" {
     description     = "https access"
     from_port       = 443
     to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_alb.id]
+  }
+
+  ingress {
+    description     = "http access"
+    from_port       = 80
+    to_port         = 80
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_alb.id]
   }
