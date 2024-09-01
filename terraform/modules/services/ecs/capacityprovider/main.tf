@@ -2,12 +2,6 @@ locals {
   default_user_data = <<EOF
 #!/bin/bash
 echo "ECS_CLUSTER=${var.cluster_name}" >> /etc/ecs/ecs.config
-
-datadog_config=$(aws secretsmanager get-secret-value --secret-id datadog --region us-west-2)
-secret_string=$(echo "$datadog_config" | jq -r '.SecretString')
-parsed_json=$(echo "$secret_string" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
-echo "$parsed_json" > /etc/datadog-agent/environment
-sudo systemctl restart datadog-agent
 EOF
 }
 resource "aws_autoscaling_group" "this" {
