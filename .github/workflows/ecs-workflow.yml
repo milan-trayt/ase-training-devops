@@ -86,6 +86,8 @@ jobs:
       - name: Update ASG and Deploy API
         run: |
           set -e
+
+          cd splittr-backend
           # Get desired capacity
           desired_capacity=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $API_AUTOSCALING_GROUP --query "AutoScalingGroups[0].DesiredCapacity" --output text)
 
