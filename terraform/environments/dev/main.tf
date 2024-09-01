@@ -128,7 +128,7 @@ module "api" {
   lb_security_grp_ids        = [module.security_group.sg_alb]
   elb_logs_bucket_versioning = "Suspended"
   ssh_public_key             = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDID9p1M6f05M18JAs8h4FlYRKTc9qdMskTnQUfmIX1bGTtLXNLsuRk25LGeodvP3H9Xfx9n/3ggT/PWfIlRL/3Kawv8p7ntaPZcirjo1RVbUQXMPnSi+pDZZgkxFxB+Z7o5OdzOnE78Pdt73Hmw62w4yb4rjxTs8J2/tQCYoS4nz+JstqkUIbFT2wmzL5qiXDrQG9y1EzJlRFFOVDd3kj2CgqaGmkaS+6tr4qEGNsBz25utO+4HbT3XIkhJua4EuJpG46vqNtiKSSkE8ntDvbu979M+alEhC8TOgeAwg8MoRSjKS2wg+MgmPcpcdF/nHt3F0gdKmwlFSfFg9TrMeZtDgYP0NQGMzP1Bzh4lPiygoTBu+M6jcrdlrcgybWGix2lUsMB21iKU5QLN25Y3vcfpgTjAiC8dbh+3ijZCRuYJGx+YsFk8ZAeJhcX7Hw59JtbPo2Zv0uYf6NdQ3CfYARxgf9mn/n86a7r0+6TA6Ru9dwUWGnYyGXGh7nDZm9SpIM= leapfrog@LF-00002369"
-  api_instance_type          = "t3.medium"
+  api_instance_type          = "t3.micro"
 
   api_instance_scaling_parameter = {
     asg_min_size    = "1"

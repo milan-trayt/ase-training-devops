@@ -3,6 +3,7 @@ const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const { getSecretValueByKey, setRegion } = require('./utils/awsSecrets');
 
 const app = express();
 app.use(cors());
@@ -12,7 +13,20 @@ app.use(cookieParser());
 app.use('/api', authRoutes);
 app.use('/api', transactionRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+async function startServer() {
+  try {
+    setRegion('us-east-1');
+    const port = await getSecretValueByKey('dev-api', 'PORT');
+    
+    const PORT = port || process.env.PORT || 443;
+    
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

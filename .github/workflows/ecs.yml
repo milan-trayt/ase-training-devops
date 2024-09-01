@@ -20,9 +20,9 @@ jobs:
     if: github.ref == 'refs/heads/dev'
     uses: ./.github/workflows/ecs-workflow.yml
     with:
-      AWS_ROLE: arn:aws:iam::865507631627:role/dev-trayt-health-api-github-action-role
+      AWS_ROLE: arn:aws:iam::949263681218:role/dev-milan-splittr-api-github-action-role
       SECRET_ID: dev-api
-      AWS_REGION: us-west-2
+      AWS_REGION: us-east-1
       ENVIRONMENT: development
 
   production:
@@ -32,8 +32,8 @@ jobs:
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/ecs-workflow.yml
     with:
-      AWS_ROLE: arn:aws:iam::526591574271:role/prod-trayt-health-api-github-action-role
+      AWS_ROLE: arn:aws:iam::949263681218:role/prod-milan-splittr-api-github-action-role
       SECRET_ID: prod-api
-      AWS_REGION: us-west-2
+      AWS_REGION: us-east-1
       RUN_SCHEMA_MIGRATION: false
       ENVIRONMENT: production

@@ -25,7 +25,6 @@ export default [...compat.extends("eslint:recommended"), {
     },
 
     rules: {
-        "no-console": "warn",
         "no-undef": "error",
         semi: "error",
         "semi-spacing": "error",
