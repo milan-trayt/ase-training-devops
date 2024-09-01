@@ -1,5 +1,5 @@
 locals {
-  portal_repo = var.portal_repo != null ? var.portal_repo : "${var.portal_name}-portal"
+  portal_repo = var.portal_repo != null ? var.portal_repo : "ase-training-devops"
   pr_repos    = formatlist("repo:milan-trayt/%s:*", var.pr_repos)
 
   cloudfront_response_functions = []
