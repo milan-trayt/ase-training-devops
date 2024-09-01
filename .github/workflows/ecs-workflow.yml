@@ -47,6 +47,7 @@ jobs:
 
       - name: Build Image
         run: |
+          cd splittr-backend
           docker build . -t ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG} --build-arg REGISTRY_URI=${REGISTRY_URI} --build-arg SECRET_PREFIX=${SECRET_PREFIX} --build-arg AWS_REGION=${AWS_REGION}  --build-arg RUN_SCHEMA_MIGRATION=${RUN_SCHEMA_MIGRATION} --build-arg DATABASE_URL=${DATABASE_URL}
 
       - name: Push Image
@@ -69,9 +70,12 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Fetch and export secrets
+        id: fetch_secrets
         run: |
           aws secretsmanager get-secret-value --secret-id ${{ inputs.SECRET_ID }} | jq -r '.SecretString' > secrets.json
-          export $(jq -r 'to_entries[] | "export \(.key)=\(.value)"' secrets.json)
+          while IFS="=" read -r key value; do
+            echo "${key}=${value}" >> $GITHUB_ENV
+          done < <(jq -r 'to_entries[] | "\(.key)=\(.value)"' secrets.json)
 
       - name: Compose AppSpec
         run: |
