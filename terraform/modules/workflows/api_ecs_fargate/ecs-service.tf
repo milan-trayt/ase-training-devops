@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "ECS-Service" {
-  name                               = "my-service"
+  name                               = "milan-splittr-ecs-service"
   launch_type                        = "FARGATE"
   platform_version                   = "LATEST"
   cluster                            = aws_ecs_cluster.ECS.id

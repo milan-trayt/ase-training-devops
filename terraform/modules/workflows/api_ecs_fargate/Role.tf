@@ -194,3 +194,5 @@ data "aws_iam_policy_document" "api_github_action_policy_document_common" {
     ]
   }
 }
+
+data "aws_caller_identity" "current" {}
