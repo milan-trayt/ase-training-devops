@@ -37,7 +37,7 @@ jobs:
       - name: Fetch and export secrets
         run: |
           aws secretsmanager get-secret-value --secret-id ${{ inputs.SECRET_ID }} | jq -r '.SecretString' > secrets.json
-          echo "Secrets: $(cat secrets.json)"
+          echo $REGISTRY_URI
           export $(jq -r 'to_entries[] | "export \(.key)=\(.value)"' secrets.json)
 
       - name: Docker Login
