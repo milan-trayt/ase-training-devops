@@ -1,6 +1,6 @@
 -- Revoke privileges from 'public' role
 REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON DATABASE trayt FROM PUBLIC;
+REVOKE ALL ON DATABASE devmilan FROM PUBLIC;
 
 -- Create roles
 CREATE ROLE readonly INHERIT;
@@ -8,7 +8,7 @@ CREATE ROLE application INHERIT;
 CREATE ROLE sqlmigration INHERIT;
 
 -- Schema Migration role
-GRANT CREATE ON DATABASE trayt TO sqlmigration;
+GRANT CREATE ON DATABASE devmilan TO sqlmigration;
 
 
 GRANT SELECT, INSERT, UPDATE, DELETE, TRIGGER, TRUNCATE, REFERENCES ON ALL TABLES IN SCHEMA public TO sqlmigration;
@@ -39,16 +39,16 @@ GRANT application TO application_user;
 GRANT sqlmigration TO sqlmigration_user;
 
 -- Grant connect and usage to the users
-GRANT CONNECT ON DATABASE trayt TO sqlmigration_user, application_user, readonly_user;
+GRANT CONNECT ON DATABASE devmilan TO sqlmigration_user, application_user, readonly_user;
 GRANT USAGE ON SCHEMA public TO sqlmigration_user, application_user, readonly_user;
 
 -- Only sqlmigration user should be able to create on the schema
 GRANT CREATE ON SCHEMA public TO sqlmigration_user;
 
 -- Set the default schema for each role
-ALTER ROLE sqlmigration_user IN DATABASE trayt SET search_path = 'public';
-ALTER ROLE application_user IN DATABASE trayt SET search_path = 'public';
-ALTER ROLE readonly_user IN DATABASE trayt SET search_path = 'public';
+ALTER ROLE sqlmigration_user IN DATABASE devmilan SET search_path = 'public';
+ALTER ROLE application_user IN DATABASE devmilan SET search_path = 'public';
+ALTER ROLE readonly_user IN DATABASE devmilan SET search_path = 'public';
 
 -- Set default privileges for future tables in the public schema
 ALTER DEFAULT PRIVILEGES IN SCHEMA public

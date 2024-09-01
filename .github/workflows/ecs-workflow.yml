@@ -79,6 +79,7 @@ jobs:
 
       - name: Compose AppSpec
         run: |
+          cd splittr-backend
           export AWS_ECS_TASK_DEFINITION_ARN=$(aws ecs describe-task-definition --task-definition ${AWS_ECS_TASK_DEFINITION} --region ${AWS_REGION} | jq '.taskDefinition.taskDefinitionArn') && \
           envsubst < code-deploy.yaml.sample | tee code-deploy.yaml
 
