@@ -2,6 +2,8 @@
 
 set -e
 
+npm run generate
+
 if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
   secrets_manager_secrets=("${SECRET_PREFIX}-api")
 
