@@ -24,7 +24,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: arn:aws:iam::949263681218:role/dev-milan-splittr-api-github-action-role
+          role-to-assume: arn:aws:iam::949263681218:role/dev-milan-splittr-web-portal-github-action-role
           role-duration-seconds: 900
           aws-region: us-east-1
 
