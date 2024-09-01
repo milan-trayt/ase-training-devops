@@ -28,6 +28,14 @@ jobs:
           role-duration-seconds: 900
           aws-region: us-east-1
 
+      - name: Fetch and export secrets
+        id: fetch_secrets
+        run: |
+          aws secretsmanager get-secret-value --secret-id dev-web-portal | jq -r '.SecretString' > secrets.json
+          while IFS="=" read -r key value; do
+            echo "${key}=${value}" >> $GITHUB_ENV
+          done < <(jq -r 'to_entries[] | "\(.key)=\(.value)"' secrets.json)
+
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build and Deploy to Dev
