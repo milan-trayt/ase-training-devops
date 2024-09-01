@@ -32,3 +32,29 @@ variable "module" {
   type        = string
   description = "Module name of the project"
 }
+
+variable "api_secret_replica_region" {
+  type        = list(string)
+  default     = []
+  description = "Region to replicate the api secrets to"
+}
+
+variable "api_secret_arn" {
+  type        = string
+  description = "API secret ARN"
+}
+
+variable "oidc_provider_arn" {
+  type        = string
+  description = "OIDC provider ARN"
+}
+
+variable "ecr_repos_arn" {
+  type        = list(string)
+  description = "ECR repository ARN"
+}
+
+variable "rds_aurora_cluster_resource_id" {
+  type        = string
+  description = "RDS Aurora cluster resource ID"
+}

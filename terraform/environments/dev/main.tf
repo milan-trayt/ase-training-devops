@@ -166,4 +166,9 @@ module "api" {
   stage                = var.stage
   project              = var.project
   module               = var.module
+  api_secret_arn       = []
+  oidc_provider_arn    = module.github_oidc.arn
+  api_secret_replica_region = []
+  rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
+  ecr_repos_arn = []
 }
