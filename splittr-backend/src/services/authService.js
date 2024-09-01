@@ -1,11 +1,26 @@
-const AWS = require("aws-sdk");
-const prisma = require("../models/prismaClient");
-require("dotenv").config();
+const AWS = require('aws-sdk');
+const prisma = require('../models/prismaClient');
+require('dotenv').config();
+const { getSecretValueByKey, setRegion } = require('../utils/awsSecrets');
+
+const SECRET_NAME = 'dev-api';
+
+async function getSecrets() {
+  setRegion('us-east-1');
+  const region = await getSecretValueByKey(SECRET_NAME, 'AWS_REGION');
+  const clientId = await getSecretValueByKey(SECRET_NAME, 'COGNITO_CLIENT_ID');
+
+  if (!region || !clientId) {
+    throw new Error('AWS_REGION or COGNITO_CLIENT_ID is missing in the secrets');
+  }
+
+  return { region, clientId };
+}
 
 const cognito = new AWS.CognitoIdentityServiceProvider({
-  region: process.env.AWS_REGION,
+  region: getSecrets().region,
 });
-const CLIENT_ID = process.env.COGNITO_CLIENT_ID;
+const CLIENT_ID = getSecrets().clientId;
 
 async function signUp(email, password, fullName) {
   let cognitoUserId;
@@ -16,12 +31,12 @@ async function signUp(email, password, fullName) {
     });
 
     if (user) {
-      throw new Error("Already exists");
+      throw new Error('Already exists');
     }
 
     const prismaTransaction = await prisma.$transaction(async (prismaTx) => {
       try {
-        const user = await prismaTx.user.create({
+        await prismaTx.user.create({
           data: {
             email,
             fullName,
@@ -34,8 +49,8 @@ async function signUp(email, password, fullName) {
           Username: email,
           Password: password,
           UserAttributes: [
-            { Name: "email", Value: email },
-            { Name: "name", Value: fullName },
+            { Name: 'email', Value: email },
+            { Name: 'name', Value: fullName },
           ],
         };
 
@@ -55,12 +70,12 @@ async function signUp(email, password, fullName) {
 
     return prismaTransaction;
   } catch (error) {
-    if (error.message.includes("Already exists")) {
-      throw new Error("User already exists for this email.");
-    } else if (error.message.includes("Password did not conform with policy")) {
-      throw new Error("Password does not meet policy requirements.");
+    if (error.message.includes('Already exists')) {
+      throw new Error('User already exists for this email.');
+    } else if (error.message.includes('Password did not conform with policy')) {
+      throw new Error('Password does not meet policy requirements.');
     } else {
-      throw new Error("Internal error. Please try again later.");
+      throw new Error('Internal error. Please try again later.');
     }
   }
 }
@@ -72,9 +87,9 @@ async function confirmSignUp(email, code) {
     });
 
     if (!user) {
-      throw new Error("No Data");
+      throw new Error('No Data');
     } else if (user.verified) {
-      throw new Error("Verified");
+      throw new Error('Verified');
     }
 
     const params = {
@@ -90,14 +105,14 @@ async function confirmSignUp(email, code) {
     });
   } catch (error) {
     console.log(error);
-    if (error.message.includes("Invalid")) {
-      throw new Error("Confirmation code is incorrect.");
-    } else if (error.message.includes("No Data")) {
-      throw new Error("User does not exist");
-    } else if (error.message.includes("Verified")) {
-      throw new Error("User is already verified.");
+    if (error.message.includes('Invalid')) {
+      throw new Error('Confirmation code is incorrect.');
+    } else if (error.message.includes('No Data')) {
+      throw new Error('User does not exist');
+    } else if (error.message.includes('Verified')) {
+      throw new Error('User is already verified.');
     } else {
-      throw new Error("Internal error. Please try again later.");
+      throw new Error('Internal error. Please try again later.');
     }
   }
 }
@@ -110,7 +125,7 @@ async function resendConfirmationCode(email) {
 
     if (!user) {
       throw new Error('No Data');
-    }else if (user.verified) {
+    } else if (user.verified) {
       throw new Error('Verified.');
     }
 
@@ -129,7 +144,7 @@ async function resendConfirmationCode(email) {
     } else if (error.message.includes('limit')) {
       throw new Error('Code limit exceeded. Please try again later.');
     } else {
-      throw new Error(`ResendConfirmationCode failed. Please try again later.`);
+      throw new Error('ResendConfirmationCode failed. Please try again later.');
     }
   }
 }
@@ -137,7 +152,7 @@ async function resendConfirmationCode(email) {
 async function signIn(email, password) {
   try {
     const params = {
-      AuthFlow: "USER_PASSWORD_AUTH",
+      AuthFlow: 'USER_PASSWORD_AUTH',
       ClientId: CLIENT_ID,
       AuthParameters: {
         USERNAME: email,
@@ -150,7 +165,7 @@ async function signIn(email, password) {
     });
 
     if (!user) {
-      throw new Error("Not found");
+      throw new Error('Not found');
     }
 
 
@@ -159,14 +174,14 @@ async function signIn(email, password) {
 
     return { IdToken, AccessToken, RefreshToken };
   } catch (error) {
-    if (error.message.includes("Not found")) {
-      throw new Error("User does not exist.");
-    } else if (error.message.includes("Incorrect")) {
-      throw new Error("Incorrect Password.");
-    } else if (error.message.includes("not confirmed")) {
-      throw new Error("Please Verify your email.");
+    if (error.message.includes('Not found')) {
+      throw new Error('User does not exist.');
+    } else if (error.message.includes('Incorrect')) {
+      throw new Error('Incorrect Password.');
+    } else if (error.message.includes('not confirmed')) {
+      throw new Error('Please Verify your email.');
     } else {
-      throw new Error("Internal error. Please try again later.");
+      throw new Error('Internal error. Please try again later.');
     }
   }
 }
@@ -174,7 +189,7 @@ async function signIn(email, password) {
 async function refreshToken(refreshToken) {
   try {
     const params = {
-      AuthFlow: "REFRESH_TOKEN_AUTH",
+      AuthFlow: 'REFRESH_TOKEN_AUTH',
       ClientId: CLIENT_ID,
       AuthParameters: {
         REFRESH_TOKEN: refreshToken,
@@ -183,10 +198,10 @@ async function refreshToken(refreshToken) {
     const data = await cognito.initiateAuth(params).promise();
     return data.AuthenticationResult;
   } catch (error) {
-    if (error.message.includes("InvalidRefreshTokenException")) {
-      throw new Error("Refresh token is invalid or expired.");
+    if (error.message.includes('InvalidRefreshTokenException')) {
+      throw new Error('Refresh token is invalid or expired.');
     } else {
-      throw new Error("Internal error. Please try again later.");
+      throw new Error('Internal error. Please try again later.');
     }
   }
 }

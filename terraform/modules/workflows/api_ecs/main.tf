@@ -13,7 +13,7 @@ locals {
       "memoryReservation" : 512,
       "portMappings": [
         {
-          "containerPort": 3000,
+          "containerPort": 443,
           "hostPort": 443
         }
       ],

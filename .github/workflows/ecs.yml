@@ -1,0 +1,39 @@
+name: Build And Deploy To ECS
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  id-token: write
+  contents: write
+  checks: write
+  actions: read
+
+jobs:
+  dev:
+    concurrency:
+      group: ${{ github.ref_name }}
+    name: Build and deploy to dev
+    if: github.ref == 'refs/heads/dev'
+    uses: ./.github/workflows/ecs-workflow.yml
+    with:
+      AWS_ROLE: arn:aws:iam::949263681218:role/dev-milan-splittr-api-github-action-role
+      SECRET_ID: dev-api
+      AWS_REGION: us-east-1
+      ENVIRONMENT: development
+
+  production:
+    concurrency:
+      group: ${{ github.ref_name }}
+    name: Build and Deploy to Production
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ecs-workflow.yml
+    with:
+      AWS_ROLE: arn:aws:iam::949263681218:role/prod-milan-splittr-api-github-action-role
+      SECRET_ID: prod-api
+      AWS_REGION: us-east-1
+      RUN_SCHEMA_MIGRATION: false
+      ENVIRONMENT: production

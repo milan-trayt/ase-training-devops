@@ -68,7 +68,7 @@ variable "api_subnet_ids" {
 
 variable "api_instance_type" {
   type        = string
-  default     = "t3.medium"
+  default     = "t3.micro"
   description = "Instance type for APi service"
 }
 
