@@ -12,7 +12,7 @@ if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
       export "$key"="$value"
     done < <(echo "$secret_value" | jq -r 'to_entries[] | "\(.key)=\(.value)"')
   done
-  
+
   if [ "$SECRET_PREFIX" = "dev" ]; then
     npm run migrate:dev
   else
@@ -20,4 +20,4 @@ if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
   fi
 fi
 
-node src/index.js
+node src/app.js
