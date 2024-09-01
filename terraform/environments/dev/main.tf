@@ -109,50 +109,61 @@ module "rds_aurora" {
   security_group_ids                = [module.security_group.sg_postgres]
 }
 
+# module "api" {
+#   source = "../../modules/workflows/api_ecs_ec2"
+
+#   stage         = var.stage
+#   project       = var.project
+#   module        = var.module
+#   domain_prefix = var.stage
+
+#   ec2_image_id  = var.ec2_image_id
+
+#   oidc_provider_arn = module.github_oidc.arn
+
+#   api_security_grp_ids       = [module.security_group.sg_api]
+#   vpc_id                     = module.vpc.vpc_id
+#   api_subnet_ids             = module.vpc.private_subnet
+#   lb_subnet_ids              = module.vpc.public_subnet
+#   lb_security_grp_ids        = [module.security_group.sg_alb]
+#   elb_logs_bucket_versioning = "Suspended"
+#   ssh_public_key             = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDID9p1M6f05M18JAs8h4FlYRKTc9qdMskTnQUfmIX1bGTtLXNLsuRk25LGeodvP3H9Xfx9n/3ggT/PWfIlRL/3Kawv8p7ntaPZcirjo1RVbUQXMPnSi+pDZZgkxFxB+Z7o5OdzOnE78Pdt73Hmw62w4yb4rjxTs8J2/tQCYoS4nz+JstqkUIbFT2wmzL5qiXDrQG9y1EzJlRFFOVDd3kj2CgqaGmkaS+6tr4qEGNsBz25utO+4HbT3XIkhJua4EuJpG46vqNtiKSSkE8ntDvbu979M+alEhC8TOgeAwg8MoRSjKS2wg+MgmPcpcdF/nHt3F0gdKmwlFSfFg9TrMeZtDgYP0NQGMzP1Bzh4lPiygoTBu+M6jcrdlrcgybWGix2lUsMB21iKU5QLN25Y3vcfpgTjAiC8dbh+3ijZCRuYJGx+YsFk8ZAeJhcX7Hw59JtbPo2Zv0uYf6NdQ3CfYARxgf9mn/n86a7r0+6TA6Ru9dwUWGnYyGXGh7nDZm9SpIM= leapfrog@LF-00002369"
+#   api_instance_type          = "t3.micro"
+
+#   api_instance_scaling_parameter = {
+#     asg_min_size    = "1"
+#     asg_max_size    = "3"
+#     target_capacity = 100
+#   }
+
+#   api_service_scaling_parameter = {
+#     scale_min_capacity = 1
+#     scale_max_capacity = 3
+#     desired_count      = 1
+#     cpu_scaling_parameters = {
+#       target_value       = 350,
+#       scale_in_cooldown  = 300,
+#       scale_out_cooldown = 180
+#     }
+
+#     memory_scaling_parameters = {
+#       target_value       = 250,
+#       scale_in_cooldown  = 300,
+#       scale_out_cooldown = 180
+#     }
+#   }
+
+#   rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
+
+# }
+
 module "api" {
-  source = "../../modules/workflows/api_ecs"
-
-  stage         = var.stage
-  project       = var.project
-  module        = var.module
-  domain_prefix = var.stage
-
-  ec2_image_id  = var.ec2_image_id
-
-  oidc_provider_arn = module.github_oidc.arn
-
-  api_security_grp_ids       = [module.security_group.sg_api]
-  vpc_id                     = module.vpc.vpc_id
-  api_subnet_ids             = module.vpc.private_subnet
-  lb_subnet_ids              = module.vpc.public_subnet
-  lb_security_grp_ids        = [module.security_group.sg_alb]
-  elb_logs_bucket_versioning = "Suspended"
-  ssh_public_key             = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDID9p1M6f05M18JAs8h4FlYRKTc9qdMskTnQUfmIX1bGTtLXNLsuRk25LGeodvP3H9Xfx9n/3ggT/PWfIlRL/3Kawv8p7ntaPZcirjo1RVbUQXMPnSi+pDZZgkxFxB+Z7o5OdzOnE78Pdt73Hmw62w4yb4rjxTs8J2/tQCYoS4nz+JstqkUIbFT2wmzL5qiXDrQG9y1EzJlRFFOVDd3kj2CgqaGmkaS+6tr4qEGNsBz25utO+4HbT3XIkhJua4EuJpG46vqNtiKSSkE8ntDvbu979M+alEhC8TOgeAwg8MoRSjKS2wg+MgmPcpcdF/nHt3F0gdKmwlFSfFg9TrMeZtDgYP0NQGMzP1Bzh4lPiygoTBu+M6jcrdlrcgybWGix2lUsMB21iKU5QLN25Y3vcfpgTjAiC8dbh+3ijZCRuYJGx+YsFk8ZAeJhcX7Hw59JtbPo2Zv0uYf6NdQ3CfYARxgf9mn/n86a7r0+6TA6Ru9dwUWGnYyGXGh7nDZm9SpIM= leapfrog@LF-00002369"
-  api_instance_type          = "t3.micro"
-
-  api_instance_scaling_parameter = {
-    asg_min_size    = "1"
-    asg_max_size    = "3"
-    target_capacity = 100
-  }
-
-  api_service_scaling_parameter = {
-    scale_min_capacity = 1
-    scale_max_capacity = 3
-    desired_count      = 1
-    cpu_scaling_parameters = {
-      target_value       = 350,
-      scale_in_cooldown  = 300,
-      scale_out_cooldown = 180
-    }
-
-    memory_scaling_parameters = {
-      target_value       = 250,
-      scale_in_cooldown  = 300,
-      scale_out_cooldown = 180
-    }
-  }
-
-  rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
-
+  source               = "../../modules/workflows/api_ecs_fargate"
+  vpc_id               = module.vpc.vpc_id
+  api_security_grp_ids = [module.security_group.sg_api]
+  lb_security_grp_ids  = [module.security_group.sg_alb]
+  subnet_id            = module.vpc.private_subnet
+  stage                = var.stage
+  project              = var.project
+  module               = var.module
 }
