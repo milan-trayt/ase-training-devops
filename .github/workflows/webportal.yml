@@ -43,4 +43,4 @@ jobs:
           cd splittr-frontend
           npm install
           npm run build
-          aws s3 sync dist s3://splittr-webportal-dev
+          aws s3 sync dist s3://milan-splittr-web-portal
