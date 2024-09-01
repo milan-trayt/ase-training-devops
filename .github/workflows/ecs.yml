@@ -22,7 +22,6 @@ jobs:
     with:
       AWS_ROLE: arn:aws:iam::949263681218:role/dev-milan-splittr-api-github-action-role
       SECRET_ID: dev-api
-      RUN_SCHEMA_MIGRATION: false
       AWS_REGION: us-east-1
       ENVIRONMENT: development
 
