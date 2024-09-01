@@ -20,5 +20,7 @@ ENV SECRET_PREFIX=${SECRET_PREFIX}
 ENV AWS_REGION=${AWS_REGION}
 ENV DATABASE_URL=${DATABASE_URL}
 
+RUN apk add --no-cache bash
+
 EXPOSE 3000
 CMD ["/bin/bash","entrypoint.sh"]
