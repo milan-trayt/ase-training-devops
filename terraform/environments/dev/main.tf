@@ -162,7 +162,8 @@ module "api" {
   vpc_id                         = module.vpc.vpc_id
   api_security_grp_ids           = [module.security_group.sg_api]
   lb_security_grp_ids            = [module.security_group.sg_alb]
-  subnet_id                      = module.vpc.private_subnet
+  lb_subnet_id                   = module.vpc.public_subnet
+  api_subnet_id                  = module.vpc.private_subnet
   stage                          = var.stage
   project                        = var.project
   module                         = var.module

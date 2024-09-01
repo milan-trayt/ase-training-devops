@@ -3,7 +3,7 @@ resource "aws_lb" "LB" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = var.lb_security_grp_ids
-  subnets            = var.subnet_id
+  subnets            = var.lb_subnet_id
 
   tags = {
     Name = "LB"
@@ -22,7 +22,7 @@ resource "tls_self_signed_cert" "example" {
     organization = "Milan"
   }
 
-  validity_period_hours = 12
+  validity_period_hours = 36
 
   allowed_uses = [
     "key_encipherment",

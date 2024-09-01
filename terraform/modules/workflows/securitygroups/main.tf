@@ -33,6 +33,14 @@ resource "aws_security_group" "sg_api" {
   vpc_id      = var.vpc_id
 
   ingress {
+    description     = "port access"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_alb.id]
+  }
+
+  ingress {
     description     = "https access"
     from_port       = 443
     to_port         = 443

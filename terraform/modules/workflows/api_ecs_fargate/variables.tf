@@ -13,9 +13,14 @@ variable "lb_security_grp_ids" {
   description = "List of security groups for load balancer"
 }
 
-variable "subnet_id" {
+variable "lb_subnet_id" {
   type        = list(string)
   description = "List of subnet for load balancer"
+}
+
+variable "api_subnet_id" {
+  type        = list(string)
+  description = "List of subnet for api"
 }
 
 variable "stage" {

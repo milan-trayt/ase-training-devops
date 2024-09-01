@@ -23,6 +23,10 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+
+    app.get('/', (req, res) => {
+      res.status(200).send('Hello World');
+    });
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
