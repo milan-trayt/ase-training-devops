@@ -33,10 +33,13 @@ jobs:
     strategy:
       matrix:
         component: [frontend, backend]
+    
     steps:
       - uses: actions/checkout@v4
+        if: env.${{ matrix.component }}_CHANGED != ''
 
       - name: Set up Node.js for ${{ matrix.component }}
+        if: env.${{ matrix.component }}_CHANGED != ''
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -45,6 +48,7 @@ jobs:
 
       - name: Cache node modules for ${{ matrix.component }}
         id: cache-npm
+        if: env.${{ matrix.component }}_CHANGED != ''
         uses: actions/cache@v4
         with:
           path: splittr-${{ matrix.component }}/node_modules
