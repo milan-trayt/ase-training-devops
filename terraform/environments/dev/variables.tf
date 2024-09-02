@@ -105,7 +105,7 @@ variable "cidr" {
 
 variable "database_port" {
   type        = number
-  default     = 9265
+  default     = 5432
   description = "Port for the database"
 }
 

@@ -24,7 +24,7 @@ resource "aws_alb_listener" "Listener" {
 }
 
 data "aws_acm_certificate" "this" {
-  domain   = "dev.bibek65.tech"
+  domain      = "dev.bibek65.tech"
   most_recent = true
-  statuses = ["ISSUED"]
+  statuses    = ["ISSUED"]
 }

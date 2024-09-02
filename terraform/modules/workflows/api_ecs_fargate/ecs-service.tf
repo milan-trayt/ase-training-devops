@@ -4,6 +4,7 @@ resource "aws_ecs_service" "ECS-Service" {
   platform_version                   = "LATEST"
   cluster                            = aws_ecs_cluster.ECS.id
   task_definition                    = aws_ecs_task_definition.TD.arn
+  force_new_deployment               = true
   scheduling_strategy                = "REPLICA"
   desired_count                      = 1
   deployment_minimum_healthy_percent = 100

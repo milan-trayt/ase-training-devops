@@ -1,12 +1,12 @@
 resource "aws_iam_role_policy" "ecs-task-execution-role-policy" {
-  name = "milan-splittr-ecs-task-execution-role-policy"
+  name   = "milan-splittr-ecs-task-execution-role-policy"
   role   = aws_iam_role.task_execution_role.id
   policy = data.aws_iam_policy_document.ecs_task_execution_policy_document.json
 }
 
 
 resource "aws_iam_role_policy" "ecs-task-role-policy" {
-  name = "milan-splittr-ecs-task-role-policy"
+  name   = "milan-splittr-ecs-task-role-policy"
   role   = aws_iam_role.task_role.id
   policy = data.aws_iam_policy_document.ecs-task-role-policy.json
 }
@@ -64,6 +64,20 @@ data "aws_iam_policy_document" "ecs_task_execution_policy_document" {
 
     resources = ["*"]
   }
+
+  statement {
+    sid    = "Cognito"
+    effect = "Allow"
+
+    actions = [
+      "cognito-identity:*",
+      "cognito-idp:*"
+    ]
+    resources = [
+      "arn:aws:cognito-idp:us-east-1:949263681218:userpool/us-east-1_8EBgtfAA9",
+    ]
+  }
+
 }
 
 data "aws_iam_policy_document" "ecs-task-role-policy" {
@@ -80,7 +94,7 @@ data "aws_iam_policy_document" "ecs-task-role-policy" {
     ]
   }
 
-statement {
+  statement {
     sid    = "AllowECR"
     effect = "Allow"
 
@@ -132,4 +146,16 @@ statement {
     resources = ["*"]
   }
 
+  statement {
+    sid    = "Cognito"
+    effect = "Allow"
+
+    actions = [
+      "cognito-identity:*",
+      "cognito-idp:*"
+    ]
+    resources = [
+      "arn:aws:cognito-idp:us-east-1:949263681218:userpool/us-east-1_8EBgtfAA9",
+    ]
+  }
 }
