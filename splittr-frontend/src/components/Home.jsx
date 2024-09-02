@@ -26,7 +26,7 @@ const Home = () => {
       const transactions = response.data;
 
       setTransactions(transactions);
-      calculateTotals(transactions);
+      calculateTotals(transactions); // Calculate totals after setting transactions
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
     } finally {
@@ -41,19 +41,28 @@ const Home = () => {
     let monthlyExpense = 0;
 
     const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
     transactions.forEach((transaction) => {
       const amount = transaction.amount;
-      const transactionMonth = new Date(transaction.date).getMonth();
+      const transactionDate = new Date(transaction.date);
+      const transactionMonth = transactionDate.getMonth();
+      const transactionYear = transactionDate.getFullYear();
 
       if (transaction.type === "income") {
         totalIncome += amount;
-        if (transactionMonth === currentMonth) {
+        if (
+          transactionMonth === currentMonth &&
+          transactionYear === currentYear
+        ) {
           monthlyIncome += amount;
         }
       } else if (transaction.type === "expense") {
         totalExpense += amount;
-        if (transactionMonth === currentMonth) {
+        if (
+          transactionMonth === currentMonth &&
+          transactionYear === currentYear
+        ) {
           monthlyExpense += amount;
         }
       }
@@ -89,7 +98,7 @@ const Home = () => {
 
       const updatedTransactions = [...transactions, form];
       setTransactions(updatedTransactions);
-      calculateTotals(updatedTransactions);
+      calculateTotals(updatedTransactions); // Recalculate totals with updated transactions
       setForm({ name: "", type: "income", amount: 0 });
       toast.success("Transaction submitted successfully");
     } catch (error) {
