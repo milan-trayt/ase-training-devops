@@ -24,4 +24,8 @@ if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
   fi
 fi
 
+else
+  echo "Skipping schema migrations"
+fi
+
 node src/app.js
