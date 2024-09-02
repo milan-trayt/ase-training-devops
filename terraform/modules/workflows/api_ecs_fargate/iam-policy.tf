@@ -74,7 +74,7 @@ data "aws_iam_policy_document" "ecs_task_execution_policy_document" {
       "cognito-idp:*"
     ]
     resources = [
-      "arn:aws:cognito-idp:us-east-1:949263681218:userpool/us-east-1_8EBgtfAA9",
+      "arn:aws:cognito-idp:us-east-1:949263681218:userpool/us-east-1_sIftFsIBi",
     ]
   }
 

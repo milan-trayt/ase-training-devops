@@ -21,6 +21,7 @@ const cognito = new AWS.CognitoIdentityServiceProvider({
   region: getSecrets().region,
 });
 const CLIENT_ID = getSecrets().clientId;
+console.log(CLIENT_ID);
 
 async function signUp(email, password, fullName) {
   let cognitoUserId;
