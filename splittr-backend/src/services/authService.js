@@ -20,10 +20,12 @@ async function getSecrets() {
 const cognito = new AWS.CognitoIdentityServiceProvider({
   region: getSecrets().region,
 });
+
 const CLIENT_ID = getSecrets().clientId;
 
 async function signUp(email, password, fullName) {
   let cognitoUserId;
+  console.log(CLIENT_ID);
 
   try {
     const user = await prisma.user.findUnique({
