@@ -19,6 +19,8 @@ async function startServer() {
     const port = await getSecretValueByKey('dev-api', 'PORT');
     
     const PORT = port || process.env.PORT || 443;
+    const CLIENT_ID = await getSecretValueByKey('dev-api', 'COGNITO_CLIENT_ID');
+    console.log(CLIENT_ID);
     
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
