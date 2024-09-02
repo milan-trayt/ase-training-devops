@@ -5,8 +5,23 @@ const { getSecretValueByKey, setRegion } = require('../utils/awsSecrets');
 
 const SECRET_NAME = 'dev-api';
 
-async function getSecrets() {
+let cognito;
+let CLIENT_ID;
+
+async function initialize() {
   setRegion('us-east-1');
+  const secrets = await getSecrets();
+  const { region, clientId } = secrets;
+
+  if (!region || !clientId) {
+    throw new Error('AWS_REGION or COGNITO_CLIENT_ID is missing in the secrets');
+  }
+
+  cognito = new AWS.CognitoIdentityServiceProvider({ region });
+  CLIENT_ID = clientId;
+}
+
+async function getSecrets() {
   const region = await getSecretValueByKey(SECRET_NAME, 'AWS_REGION');
   const clientId = await getSecretValueByKey(SECRET_NAME, 'COGNITO_CLIENT_ID');
 
@@ -17,13 +32,9 @@ async function getSecrets() {
   return { region, clientId };
 }
 
-const cognito = new AWS.CognitoIdentityServiceProvider({
-  region: getSecrets().region,
-});
-
-const CLIENT_ID = getSecrets().clientId;
-
 async function signUp(email, password, fullName) {
+  await initialize(); // Ensure initialization is complete
+
   let cognitoUserId;
 
   try {
@@ -84,6 +95,8 @@ async function signUp(email, password, fullName) {
 }
 
 async function confirmSignUp(email, code) {
+  await initialize(); // Ensure initialization is complete
+
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -121,6 +134,8 @@ async function confirmSignUp(email, code) {
 }
 
 async function resendConfirmationCode(email) {
+  await initialize(); // Ensure initialization is complete
+
   try {
     const user = await prisma.user.findUnique({
       where: { email },
@@ -153,6 +168,8 @@ async function resendConfirmationCode(email) {
 }
 
 async function signIn(email, password) {
+  await initialize(); // Ensure initialization is complete
+
   try {
     const params = {
       AuthFlow: 'USER_PASSWORD_AUTH',
@@ -170,7 +187,6 @@ async function signIn(email, password) {
     if (!user) {
       throw new Error('Not found');
     }
-
 
     const data = await cognito.initiateAuth(params).promise();
     const { IdToken, AccessToken, RefreshToken } = data.AuthenticationResult;
@@ -190,6 +206,8 @@ async function signIn(email, password) {
 }
 
 async function refreshToken(refreshToken) {
+  await initialize(); // Ensure initialization is complete
+
   try {
     const params = {
       AuthFlow: 'REFRESH_TOKEN_AUTH',
