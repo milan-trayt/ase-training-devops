@@ -93,10 +93,11 @@ const Home = () => {
       return;
     }
 
+    const transactionDate = new Date().toISOString();
     try {
       await axiosInstance.post("transaction", form);
 
-      const updatedTransactions = [...transactions, form];
+      const updatedTransactions = [...transactions, {...form, date: transactionDate}];
       setTransactions(updatedTransactions);
       calculateTotals(updatedTransactions); // Recalculate totals with updated transactions
       setForm({ name: "", type: "income", amount: 0 });
