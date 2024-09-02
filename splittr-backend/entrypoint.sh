@@ -22,7 +22,6 @@ if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
   else
     npm run migrate
   fi
-fi
 
 else
   echo "Skipping schema migrations"
