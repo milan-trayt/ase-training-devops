@@ -75,15 +75,22 @@ const Home = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.amount <= 0 || (form.type === "expense" && form.amount > totals.totalAmount)) {
+
+    if (
+      form.amount <= 0 ||
+      (form.type === "expense" && form.amount > totals.totalAmount)
+    ) {
       toast.error("Invalid amount or insufficient balance");
       return;
     }
+
     try {
       await axiosInstance.post("transaction", form);
+
+      const updatedTransactions = [...transactions, form];
+      setTransactions(updatedTransactions);
+      calculateTotals(updatedTransactions);
       setForm({ name: "", type: "income", amount: 0 });
-      setTransactions([...transactions, form]);
-      calculateTotals([...transactions, form]);
       toast.success("Transaction submitted successfully");
     } catch (error) {
       toast.error("Failed to submit transaction");
@@ -214,7 +221,9 @@ const Home = () => {
       <div className="bg-white p-6 rounded-lg md:px-12 shadow-md">
         <div className="grid md:grid-cols-2">
           <div className=" col-span-1">
-            <h2 className="text-2xl font-semibold mb-4 underline">Recent Incomes</h2>
+            <h2 className="text-2xl font-semibold mb-4 underline">
+              Recent Incomes
+            </h2>
             <ul>
               {loading
                 ? Array.from({ length: 10 }).map((_, idx) => (
@@ -237,7 +246,9 @@ const Home = () => {
           </div>
           <div className="md:hidden w-full h-1 bg-gray-300"></div>
           <div className=" col-span-1 ">
-            <h2 className="text-2xl font-semibold mb-4 underline">Recent Expenses</h2>
+            <h2 className="text-2xl font-semibold mb-4 underline">
+              Recent Expenses
+            </h2>
             <ul>
               {loading
                 ? Array.from({ length: 10 }).map((_, idx) => (
