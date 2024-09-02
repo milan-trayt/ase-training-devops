@@ -24,6 +24,7 @@ jobs:
       SECRET_ID: dev-api
       AWS_REGION: us-east-1
       ENVIRONMENT: development
+      RUN_SCHEMA_MIGRATION: true
 
   production:
     concurrency:
