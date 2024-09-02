@@ -5,7 +5,9 @@ on:
     branches:
       - dev
       - main
-
+    paths:
+      - 'splittr-frontend/**'
+      
 permissions:
   id-token: write
   contents: write
