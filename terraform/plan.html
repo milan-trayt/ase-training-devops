@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terraform Plan</title>
+<style>
+  .line-numbers {
+    float: left;
+    text-align: right;
+    color: #6d7a86;
+    user-select: none;
+    margin-right: 1px;
+    padding-right: 10px;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: #0d1117;
+    color: #eef2f6;
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .top-nav {
+    background-color: #16263d;
+    padding: 10px 0;
+    text-align: center;
+  }
+  .top-nav h1 {
+    margin: 0;
+    font-size: 19px;
+  }
+  .top-nav p {
+    margin: 0;
+    font-size: 16px;
+  }
+  .plan-container {
+    max-width: 95dvw; /* Maximum width of the plan container*/
+    background-color: #161B22;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(247, 238, 238, 0.1);
+    overflow: auto; /* Enable scrolling */
+    max-height: calc(100vh - 120px); /* Limit height to the viewport minus top nav height */
+    border: #12315c 1px solid;
+    margin: 20px auto;
+    white-space: pre-wrap; /* Preserve line breaks */
+  }
+  .plan-container::-webkit-scrollbar {
+    width: 8px; /* Adjust the width of the scrollbar */
+  }
+  .plan-container::-webkit-scrollbar-thumb {
+    background-color: orange; /* Set the scrollbar thumb color to orange */
+    border-radius: 6px; /* Rounded corners for the thumb */
+  }
+  .plan-container::-webkit-scrollbar-track {
+    background-color: #161B22; /* Set the scrollbar track color */
+  }
+  .copy-button {
+    position: fixed; /* Stick to the viewport */
+    top: 20px;
+    right: 20px;
+    background-color: #12315c;
+    color: #ffffff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    z-index: 1; /* Ensure it's above the scrollable content */
+  }
+  .copy-button:hover {
+    background-color: #0a1e38;
+  }
+  .copied-animation {
+    animation: bounce 0.5s ease-in-out;
+  }
+  .copy-button .tick-icon {
+    display: none;
+    margin-left: 5px;
+  }
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-10px);
+    }
+    75% {
+      transform: translateY(-5px);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="top-nav">
+    <h1>Terraform plan for planenvironmentname environment</h1>
+    <p>Plan generated on: plandate</p>
+  </div>
+  <button class="copy-button" id="copyButton">
+    <span class="copy-text">Copy Plan</span>
+    <span class="tick-icon">✓</span>
+  </button>
+  <div class="plan-container">
+    <div class="line-numbers">
+      <!-- Line numbers will be generated using JavaScript -->
+    </div>
+    <pre id="codeContainer">
+      terraformplanhere
+    </pre>
+  </div>
+
+  <script>
+    // JavaScript code to handle button click and change icon temporarily
+    const copyButton = document.getElementById('copyButton');
+    const tickIcon = copyButton.querySelector('.tick-icon');
+    const codeContainer = document.getElementById('codeContainer');
+    const lineNumbers = document.querySelector('.line-numbers');
+
+    // Split the code into lines and generate line numbers
+    const codeLines = codeContainer.innerText.split('\n');
+    for (let i = 0; i < codeLines.length; i++) {
+      const lineNumber = i + 1;
+      const lineElement = document.createElement('div');
+      lineElement.innerText = lineNumber;
+      lineNumbers.appendChild(lineElement);
+    }
+
+    copyButton.addEventListener('click', function() {
+      // Create a new textarea element and set its value to the code content
+      const textarea = document.createElement('textarea');
+      textarea.value = codeContainer.innerText;
+      document.body.appendChild(textarea);
+
+      // Select and copy the content from the textarea
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      // Show the tick icon briefly
+      tickIcon.style.display = 'inline';
+      setTimeout(function() {
+        tickIcon.style.display = 'none';
+      }, 1000); // 1000ms = 1 second
+    });
+  </script>
+</body>
+</html>
