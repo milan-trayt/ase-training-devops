@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         environment: [dev, prod]
-        
+
     steps:
       - name: Set environment vars
         shell: bash
@@ -76,7 +76,7 @@ jobs:
           cd terraform/environments/${{matrix.environment}}
           current_date=$(date)
           sed -n '/Terraform used the selected providers to generate the following execution/,/Plan:/p' plan.tmp.json > plan.json
-          plan_content=$(cat ../../plan.json)
+          plan_content=$(cat plan.json)
           html_content=$(cat ../../plan.html)
           add_date="${html_content//plandate/$current_date}"
           add_env="${add_date//planenvironmentname/${{matrix.environment}}}"
