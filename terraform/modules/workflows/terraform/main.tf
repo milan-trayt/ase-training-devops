@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "terraform_state_lock_write" {
   statement {
     sid       = "SecretsManager"
     effect    = "Allow"
-    resources = ["arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.stage}_terragrunt_state"]
+    resources = ["arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.project}-${var.module}-tflock-${var.stage}"]
     actions = [
       "dynamodb:PutItem",
       "dynamodb:DeleteItem"
