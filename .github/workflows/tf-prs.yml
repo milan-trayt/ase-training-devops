@@ -87,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.environment}}
-          path: terraform/environments/${{matrix.environment}}/${{matrix.environment}}.html
+          path: terraform/environments/${{github.event.number}}_${{matrix.environment}}/index.html
 
   deploy_plan:
     name: Upload Plan To Pages
