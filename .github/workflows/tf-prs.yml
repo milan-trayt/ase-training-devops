@@ -115,6 +115,7 @@ jobs:
   Update-PR:
     name: Update Pull Request
     runs-on: ubuntu-latest
+    if: always()
     needs: deploy_plan
     steps:
       - name: Checkout code
