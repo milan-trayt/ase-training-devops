@@ -87,7 +87,7 @@ async function signUp(email, password, fullName) {
     } else if (error.message.includes('Password did not conform with policy')) {
       throw new Error('Password does not meet policy requirements.');
     } else {
-      throw new Error(error);
+      throw new Error('Internal error. Please try again later.');
     }
   }
 }
