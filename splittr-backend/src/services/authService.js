@@ -25,7 +25,6 @@ const CLIENT_ID = getSecrets().clientId;
 
 async function signUp(email, password, fullName) {
   let cognitoUserId;
-  console.log(CLIENT_ID);
 
   try {
     const user = await prisma.user.findUnique({
@@ -55,6 +54,8 @@ async function signUp(email, password, fullName) {
             { Name: 'name', Value: fullName },
           ],
         };
+
+        console.log(cognitoParams);
 
         const cognitoResponse = await cognito.signUp(cognitoParams).promise();
         cognitoUserId = cognitoResponse.UserSub;
