@@ -16,7 +16,7 @@ for secret in "${secrets_manager_secrets[@]}"; do
   done < <(echo "$secret_value" | jq -r 'to_entries[] | "\(.key)=\(.value)"')
 done
 
-if [ "$RUN_SCHEMA_MIGRATIONS" = "true" ]; then
+if [ "$RUN_SCHEMA_MIGRATION" = "true" ]; then
   if [ "$SECRET_PREFIX" = "dev" ]; then
     npm run migrate:dev
   else

@@ -30,6 +30,7 @@ ENV RUN_SCHEMA_MIGRATION=${RUN_SCHEMA_MIGRATION}
 
 RUN apk add --no-cache bash
 RUN apk add --no-cache aws-cli
+RUN apk add --no-cache bash jq
 
 EXPOSE 3000
 CMD ["/bin/bash","entrypoint.sh"]
