@@ -66,8 +66,6 @@ async function signUp(email, password, fullName) {
           ],
         };
 
-        console.log(cognitoParams);
-
         const cognitoResponse = await cognito.signUp(cognitoParams).promise();
         cognitoUserId = cognitoResponse.UserSub;
 
