@@ -1,0 +1,103 @@
+#!/bin/sh
+
+#help
+help() {
+  # Validate the commit message format
+  echo
+  echo "Please follow the format:"
+  echo "  <type>(<release_type>): <subject>"
+  echo
+  echo "Example:"
+  echo "  feat(major): update terragrunt version to 4.5"
+  echo
+  echo "Types:"
+  echo "  feat    - A new feature for the user, not a build script feature"
+  echo "  fix     - A bug fix for the user, not a build script fix"
+  echo "  docs    - Changes to documentation"
+  echo "  style   - Formatting, missing semicolons, etc; no production code change"
+  echo "  refactor- Refactoring production code, e.g., renaming a variable"
+  echo "  test    - Adding or refactoring tests; no production code change"
+  echo "  chore   - Updating build tasks etc; no production code change"
+  echo
+  echo "Release types:"
+  echo "  major   - For breaking changes (e.g., feat with breaking changes)"
+  echo "  minor   - For backward-compatible changes (e.g., feat, refactor)"
+  echo "  patch   - For backward-compatible bug fixes (e.g., fix), docs, and chores"
+  echo
+  exit 1
+}
+
+# Define colors
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+# Function to print error messages in red
+error() {
+  local message="$1"
+  echo "${RED}ERROR: ${message}${NC}"
+}
+
+# Commit message file
+COMMIT_MSG_FILE="$1"
+
+# Check if COMMIT_MSG_FILE is a file
+if [ -f "$COMMIT_MSG_FILE" ]; then
+    # If it's a file, read the commit message from the file
+    COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+else
+    # Otherwise, treat it as a direct commit message
+    COMMIT_MSG="$COMMIT_MSG_FILE"
+fi
+
+echo $COMMIT_MSG
+
+# Extract the type, release type, and subject from the commit message
+TYPE=$(echo "$COMMIT_MSG" | sed -n 's/^\([a-zA-Z]*\)(.*):.*/\1/p')
+RELEASE_TYPE=$(echo "$COMMIT_MSG" | sed -n 's/^[a-zA-Z]*(\(.*\)):.*/\1/p')
+SUBJECT=$(echo "$COMMIT_MSG" | sed -n 's/^[a-zA-Z]*([^)]*)\s*:\s*\(.*\)/\1/p')
+
+# Define valid release types
+VALID_RELEASE_TYPES="major minor patch"
+
+# Check if the release type is valid
+if ! echo "$VALID_RELEASE_TYPES" | grep -qw "$RELEASE_TYPE"; then
+  error "Invalid release type. Must be one of: (major):, (minor):, (patch):"
+  help
+fi
+
+# Define valid types and their allowed release types
+case "$TYPE" in
+  feat|fix|refactor)
+    # For these types, we need to ensure the release type is major, minor, or patch
+    if ! echo "$VALID_RELEASE_TYPES" | grep -qw "$RELEASE_TYPE"; then
+      error "Release type for $TYPE must be one of: major, minor, patch."
+      help
+    fi
+    ;;
+  docs|style|test|chore)
+    # For these types, only patch is valid
+    if [ "$RELEASE_TYPE" != "patch" ]; then
+      error "Release type for $TYPE must be patch."
+      help
+    fi
+    ;;
+  *)
+    error "Invalid type. Must be one of: feat, fix, docs, style, refactor, test, chore."
+    help
+    ;;
+esac
+
+# Check if the subject is in lowercase
+if echo "$SUBJECT" | grep -q '[A-Z]'; then
+  error "commit message must contain lower case letters"
+  help
+fi
+
+# Check if the subject has more than 2 words
+WORD_COUNT=$(echo "$SUBJECT" | wc -w)
+if [ "$WORD_COUNT" -le 2 ]; then
+  error "commit message must contain more than 3 words"
+  help
+fi
+
+# If all checks pass, exit with 0 status code
+exit 0
