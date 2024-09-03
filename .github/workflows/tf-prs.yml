@@ -55,6 +55,14 @@ jobs:
       - name: Add github safe dir
         run: git config --global --add safe.directory /__w/terraform-code/terraform-code
 
+      - name: Check and exit if not formatted
+        run: |
+          cd terraform
+          if ! terraform fmt -check -recursive; then
+            echo "Terraform files are not formatted. Please run 'terraform fmt' to fix this."
+            exit 1
+          fi
+
       - name: Init
         id: init
         run: |
