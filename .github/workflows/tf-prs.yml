@@ -57,7 +57,6 @@ jobs:
 
       - name: Check and exit if not formatted
         run: |
-          cd terraform
           if ! terraform fmt -check -recursive; then
             echo "Terraform files are not formatted. Please run 'terraform fmt' to fix this."
             exit 1
