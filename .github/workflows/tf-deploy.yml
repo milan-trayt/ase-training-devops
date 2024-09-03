@@ -1,0 +1,86 @@
+name: Deploy on Tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The version tag to deploy'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  repository-projects: read
+  packages: read
+  pages: write
+  checks: write
+  actions: read
+
+env:
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  plan:
+    name: Deploy Plan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set environment vars
+        shell: bash
+        run: |
+          if [[ ${{inputs.tag}} == 'dev' ]]; then
+              echo "AWS_ROLE=arn:aws:iam::949263681218:role/milan-splittr-terraform-github-action-write-role" >> $GITHUB_ENV
+              echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ ${{inputs.tag}} == 'prod' ]]; then
+              echo "AWS_ROLE=arn:aws:iam::949263681218:role/milan-splittr-terraform-github-action-write-role" >> $GITHUB_ENV
+              echo "ENV=prod" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+      
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag }}
+      
+      - name: Add github safe dir
+        run: git config --global --add safe.directory /__w/terraform-code/terraform-code
+
+      - name: Check and exit if not formatted
+        run: |
+          if ! terraform fmt -check -recursive; then
+            echo "Terraform files are not formatted. Please run 'terraform fmt' to fix this."
+            exit 1
+          fi
+
+      - name: Init
+        id: init
+        run: |
+          cd terraform/environments/${{inputs.tag}}
+          terraform init
+
+      - name: Apply
+        if: ${{steps.init.outcome}} == 'success'
+        id: plan
+        run: |
+          cd terraform/environments/${{inputs.tag}}
+          terraform apply --auto-approve
