@@ -2,6 +2,9 @@ name: PullRequest Tester
 
 on:
   pull_request:
+    paths:
+      - 'splittr-frontend/**'
+      - 'splittr-backend/**'
 
 env:
   cache-name: cache-api-node-modules
