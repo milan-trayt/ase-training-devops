@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Terraform Plan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #0b2c51;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 1rem;
+            border-bottom: 1px solid #ccc;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+        li:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Terraform Plan</h1>
+    </header>
+    <main>
+        <ul>
+            <li onclick="navigateTo('https://milan-trayt.github.io/ase-training-devops/dev/dev.html')">DEV Terraform Plan</li>
+            <li onclick="navigateTo('https://milan-trayt.github.io/ase-training-devops/prod/prod.html')">PROD Terraform Plan</li>
+        </ul>
+    </main>
+    <script>
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+    </script>
+</body>
+</html>

@@ -9,6 +9,14 @@ module "github_oidc" {
   client_id_list = ["sts.amazonaws.com"]
 }
 
+module "github_actions_terraform" {
+  source            = "../../modules/workflows/terraform"
+  stage             = var.stage
+  project           = var.project
+  module            = var.module
+  oidc_provider_arn = module.github_oidc.arn
+}
+
 module "waf" {
   source = "../../modules/workflows/waf/cloudfront"
 

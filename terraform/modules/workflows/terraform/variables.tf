@@ -21,7 +21,7 @@ variable "repo_name" {
 
 variable "oidc_name" {
   type        = string
-  default     = null
+  default     = "token.actions.githubusercontent.com"
   description = "Repo the portal belongs to. eg. terrafrom-code  etc."
 }
 

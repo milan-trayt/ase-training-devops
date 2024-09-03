@@ -1,0 +1,145 @@
+name: Terraform Plan
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  repository-projects: read
+  packages: read
+  pages: write
+
+env:
+  AWS_REGION: 'us-east-1'
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, prod]
+
+    steps:
+      - name: Set environment vars
+        shell: bash
+        run: |
+          if [[ ${{matrix.environment}} == 'dev' ]]; then
+              echo "AWS_ROLE=arn:aws:iam::949263681218:role/milan-splittr-terraform-github-action-read-role" >> $GITHUB_ENV
+              echo "ENV=dev" >> $GITHUB_ENV
+          elif [[ ${{matrix.environment}} == 'prod' ]]; then
+              echo "AWS_ROLE=arn:aws:iam::949263681218:role/milan-splittr-terraform-github-action-read-role" >> $GITHUB_ENV
+              echo "ENV=prod" >> $GITHUB_ENV
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.1
+      
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Add github safe dir
+        run: git config --global --add safe.directory /__w/terraform-code/terraform-code
+
+      - name: Init
+        id: init
+        run: |
+          cd terraform/environments/${{matrix.environment}}
+          terraform init
+
+      - name: Plan
+        if: ${{steps.init.outcome}} == 'success'
+        id: plan
+        run: |
+          cd terraform/environments/${{matrix.environment}}
+          terraform plan -out=plan -no-color 2>&1 | tee -a plan.tmp.json
+          if grep -q "level=error" plan.tmp.json ; then exit 1; else true; fi
+
+      - name: Compose Plan
+        if: steps.plan.outputs.exitcode != 1
+        shell: bash
+        run: |
+          cd terraform/environments/${{matrix.environment}}
+          current_date=$(date)
+          sed -n '/Terraform used the selected providers to generate the following execution/,/Plan:/p' plan.tmp.json > plan.json
+          plan_content=$(cat plan.json)
+          html_content=$(cat ../../plan.html)
+          add_date="${html_content//plandate/$current_date}"
+          add_env="${add_date//planenvironmentname/${{matrix.environment}}}"
+          updated_html_content="${add_env//terraformplanhere/$plan_content}"
+          echo "$updated_html_content" > ${{matrix.environment}}.html
+      
+      - name: Archive plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.environment}}
+          path: terraform/environments/${{github.event.number}}_${{matrix.environment}}/index.html
+
+  deploy_plan:
+    name: Upload Plan To Pages
+    runs-on: ubuntu-latest
+    if: always()
+    needs: plan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: pages
+      
+      - name: Download all plan artifacts
+        uses: actions/download-artifact@v4
+      
+      - name: Publish to pages branch
+        shell: bash
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add .
+          git commit -m "Add plan for run ${{github.event.number}}"
+          git push origin pages
+
+  Update-PR:
+    name: Update Pull Request
+    runs-on: ubuntu-latest
+    if: always()
+    needs: deploy_plan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          message=$(cat <<-END
+          PLAN BEGIN
+
+            | BROWSE PLAN                                                                                            |
+            | ------------------------------------------------------------------------------------------------------ |
+            | [DEV](https://milan-trayt.github.io/ase-training-devops/${{github.event.number}}_dev/index.html)       |
+            | [PROD](https://milan-trayt.github.io/ase-training-devops/${{github.event.number}}_prod/index.html)     |
+
+          PLAN END
+          END
+          )
+
+          git config --global --add safe.directory /__w/terraform-code/terraform-code
+          gh pr view ${{github.event.number}} --json body -q .body > body.txt
+          sed -ri "/PLAN BEGIN/,/PLAN END:/d" body.txt
+          echo "$message" >> body.txt
+          gh pr edit ${{github.event.number}} --body-file body.txt
