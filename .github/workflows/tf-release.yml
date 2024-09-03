@@ -1,4 +1,4 @@
-name: Terraform Plan
+name: Terraform Release
 
 on:
   pull_request:
