@@ -410,7 +410,7 @@ resource "aws_iam_role" "task_role" {
 
 data "aws_iam_policy_document" "assume_role_policy" {
   statement {
-    sid    = "Ecs Assume Role Milan Splittr"
+    sid    = "EcsAssumeRole"
     effect = "Allow"
     principals {
       type        = "Service"
