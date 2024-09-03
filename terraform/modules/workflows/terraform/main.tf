@@ -109,8 +109,7 @@ resource "aws_iam_role" "terraform_write_role" {
           },
           "StringLike" : {
             "${var.oidc_name}:sub" : [
-              "repo:milan-trayt/ase-training-devops:ref:refs/heads/main",
-              "repo:milan-trayt/ase-training-devops:${var.stage}",
+              "repo:milan-trayt/ase-training-devops:*",
             ]
           }
         }
@@ -184,16 +183,6 @@ data "aws_iam_policy_document" "write_policy" {
       "ds:*",
       "backup-storage:*",
       "organizations:*"
-    ]
-  }
-
-  statement {
-    sid       = "TerraformWriteDeny"
-    effect    = "Deny"
-    resources = ["*"]
-    actions = [
-      "organizations:DeleteOrganization",
-      "organizations:DisableAWSServiceAccess"
     ]
   }
 }
