@@ -127,7 +127,7 @@ jobs:
   Update-PR:
     name: Update Pull Request
     runs-on: ubuntu-latest
-    if: always()
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     needs: deploy_plan
     steps:
       - name: Checkout code
