@@ -22,6 +22,7 @@ env:
 jobs:
   plan:
     name: Plan
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -103,7 +104,7 @@ jobs:
   deploy_plan:
     name: Upload Plan To Pages
     runs-on: ubuntu-latest
-    if: always()
+    if: github.event_name == 'pull_request' && github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize'
     needs: plan
     steps:
       - name: Checkout code
