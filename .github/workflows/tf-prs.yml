@@ -57,7 +57,6 @@ jobs:
 
       - name: Check and exit if not formatted
         run: |
-          cd terraform
           if ! terraform fmt -check -recursive; then
             echo "Terraform files are not formatted. Please run 'terraform fmt' to fix this."
             exit 1
@@ -89,13 +88,13 @@ jobs:
           add_date="${html_content//plandate/$current_date}"
           add_env="${add_date//planenvironmentname/${{matrix.environment}}}"
           updated_html_content="${add_env//terraformplanhere/$plan_content}"
-          echo "$updated_html_content" > ${{matrix.environment}}.html
+          echo "$updated_html_content" > index.html
       
       - name: Archive plan
         uses: actions/upload-artifact@v4
         with:
           name: ${{matrix.environment}}
-          path: terraform/environments/${{github.event.number}}_${{matrix.environment}}/index.html
+          path: terraform/environments/${{matrix.environment}}/index.html
 
   deploy_plan:
     name: Upload Plan To Pages
