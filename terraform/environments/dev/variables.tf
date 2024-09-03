@@ -13,7 +13,7 @@ variable "project" {
 variable "module" {
   type        = string
   default     = "splittr"
-  description = "Module name of the project"
+  description = "Name of the module"
 }
 
 ###################################
