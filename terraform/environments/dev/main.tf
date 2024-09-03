@@ -10,10 +10,10 @@ module "github_oidc" {
 }
 
 module "github_actions_terraform" {
-  source = "../../modules/workflows/terraform"
-  stage = var.stage
-  project = var.project
-  module = var.module
+  source            = "../../modules/workflows/terraform"
+  stage             = var.stage
+  project           = var.project
+  module            = var.module
   oidc_provider_arn = module.github_oidc.arn
 }
 
