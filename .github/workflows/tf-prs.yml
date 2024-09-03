@@ -2,7 +2,7 @@ name: Terraform Plan
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, reopened, synchronize]
     branches:
       - dev
     paths:
@@ -155,61 +155,3 @@ jobs:
           echo "$message" >> body.txt
           gh pr edit ${{github.event.number}} --body-file body.txt
 
-  create-release:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: main
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-
-    - name: Install semver package
-      run: npm install -g semver
-
-    - name: Get current version
-      shell: bash
-      run: |
-        CURRENT_VERSION=$(gh release view --json tagName -q '.tagName' || echo "v0.0.0")
-        echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
-    
-    - name: Bump Version
-      run: |
-        COMMITS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits")
-          
-        echo "$COMMITS" | jq -r '.[].commit.message' > commit_messages.txt
-
-        release_type=""
-        while IFS= read -r line; do
-            if [[ $line == *\(major\)* ]]; then
-                release_type="major"
-                break
-            elif [[ $line == *\(minor\)* ]]; then
-                release_type="minor"
-            elif [[ $line == *\(patch\)* && $release_type != "minor" ]]; then
-                release_type="patch"
-            fi
-        done < commit_messages.txt
-
-        if [[ -n $release_type ]]; then
-            echo "Release type: $release_type"
-        else
-            echo "No valid release type found. Creating a patch release"
-            release_type="patch"
-        fi
-      
-        TAG_NAME=$(semver -i $release_type "$CURRENT_VERSION")
-        echo "TAG_NAME=v${TAG_NAME}" >> $GITHUB_ENV 
-    
-    - name: Create GitHub Release
-      shell: bash
-      run: |
-        gh --version
-        gh release create $TAG_NAME --title "Release ${TAG_NAME}" --generate-notes
-  
