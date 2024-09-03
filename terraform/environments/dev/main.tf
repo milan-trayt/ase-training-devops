@@ -117,6 +117,7 @@ module "rds_aurora" {
   security_group_ids                = [module.security_group.sg_postgres]
 }
 
+
 # module "api" {
 #   source = "../../modules/workflows/api_ecs_ec2"
 
@@ -164,6 +165,7 @@ module "rds_aurora" {
 #   rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
 
 # }
+
 
 module "api" {
   source                         = "../../modules/workflows/api_ecs_fargate"
