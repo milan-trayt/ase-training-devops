@@ -9,13 +9,13 @@ resource "aws_iam_role" "task_role" {
 }
 
 data "aws_iam_policy_document" "assume_role_policy" {
-  statement{
-    sid = ""
+  statement {
+    sid    = ""
     effect = "Allow"
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com"]
     }
     actions = ["sts:AssumeRole"]
-}
+  }
 }
