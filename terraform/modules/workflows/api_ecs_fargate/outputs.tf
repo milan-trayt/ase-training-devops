@@ -14,3 +14,7 @@ output "api_secret_name" {
   value = var.api_secret_arn == null ? module.api_secrets[0].name : var.api_secret_arn
 }
 
+output "service_name" {
+  value = aws_ecs_service.ECS-Service.name
+}
+
