@@ -182,7 +182,9 @@ data "aws_iam_policy_document" "write_policy" {
       "workspaces:*",
       "ds:*",
       "backup-storage:*",
-      "organizations:*"
+      "organizations:*",
+      "cognito-identity:*",
+      "cognito-idp:*",
     ]
   }
 }
