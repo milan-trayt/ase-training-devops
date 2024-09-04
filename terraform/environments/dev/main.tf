@@ -185,9 +185,9 @@ module "api" {
 }
 
 module "cognito" {
-  source         = "../../modules/workflows/cognito"
-  user_pool_name = "milan-splittr-pool"
-  username_attributes = [ "email" ]
+  source                = "../../modules/workflows/cognito"
+  user_pool_name        = "milan-splittr-pool"
+  username_attributes   = ["email"]
   email_sending_account = "COGNITO_DEFAULT"
-  deletion_protection = true
+  deletion_protection   = true
 }
