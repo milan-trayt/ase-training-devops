@@ -151,7 +151,7 @@ const Home = () => {
     }
 
     try {
-      const response = await axiosInstance.post("split", { ...splitForm });
+      const response = await axiosInstance.post("create", { ...splitForm });
       const newSplit = response.data; // Assume the response contains the new split
 
       // Update state with the new split
