@@ -7,12 +7,13 @@ import { Icon } from "react-icons-kit";
 import { download } from "react-icons-kit/icomoon/download";
 
 const Statement = () => {
+  // Set default sort by date (newest first)
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [sortBy, setSortBy] = useState("date");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("date"); // Default sort by date
+  const [sortOrder, setSortOrder] = useState("desc"); // Default sort order newest first
   const [activeFilter, setActiveFilter] = useState(null);
 
   useEffect(() => {
@@ -116,11 +117,12 @@ const Statement = () => {
             <select
               onChange={handleSortChange}
               className="p-2 border border-gray-300 rounded-lg w-full"
+              value={`${sortBy},${sortOrder}`}
             >
-              <option value="date,asc">Date (Ascending)</option>
-              <option value="date,desc">Date (Descending)</option>
-              <option value="amount,asc">Amount (Ascending)</option>
-              <option value="amount,desc">Amount (Descending)</option>
+              <option value="date,desc">Newest First</option>
+              <option value="date,asc">Oldest First</option>
+              <option value="amount,desc">Highest Amount</option>
+              <option value="amount,asc">Lowest Amount</option>
             </select>
           </div>
         </div>
@@ -163,11 +165,7 @@ const Statement = () => {
           <h2 className="text-2xl font-bold mb-4">Transaction Statement</h2>
           <CSVLink data={csvData} filename={"transactions.csv"}>
             <button className="bg-green-500 text-white p-2 rounded-lg hover:bg-green-600">
-              <Icon
-                className="text-white mr-2"
-                icon={download}
-                size={25}
-              />
+              <Icon className="text-white mr-2" icon={download} size={25} />
               Download CSV
             </button>
           </CSVLink>

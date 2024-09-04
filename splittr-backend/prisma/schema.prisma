@@ -22,7 +22,7 @@ model Transaction {
   userId    String
   name      String
   type      String
-  amount    Float
+  amount    Int
   date      DateTime @default(now())
   user      User     @relation(fields: [userId], references: [userId])
 }
@@ -40,6 +40,6 @@ model Participant {
   id        Int      @id @default(autoincrement())
   splitId   Int
   name      String
-  amount    Float
+  amount    Int
   split     Split    @relation(fields: [splitId], references: [id])
 }

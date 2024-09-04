@@ -3,6 +3,8 @@ const router = express.Router();
 const splitController = require('../controllers/splitController');
 const verifyToken = require('../middleware/authMiddleware');
 
+router.get('/splits', verifyToken, splitController.getSplit);
+
 router.post('/create', verifyToken, splitController.createSplit);
 
 router.post('/paidByOne', verifyToken, splitController.paidByOne);
