@@ -183,3 +183,11 @@ module "api" {
   rds_aurora_cluster_resource_id = module.rds_aurora.cluster_resource_id
   ecr_repos_arn                  = []
 }
+
+module "cognito" {
+  source         = "../../modules/workflows/cognito"
+  user_pool_name = "milan-splittr-pool"
+  username_attributes = [ "email" ]
+  email_sending_account = "COGNITO_DEFAULT"
+  deletion_protection = true
+}

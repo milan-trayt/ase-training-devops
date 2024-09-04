@@ -1,6 +1,7 @@
 const express = require('express');
 const authRoutes = require('./routes/authRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const splitRoutes = require('./routes/splitRoutes');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const { getSecretValueByKey, setRegion } = require('./utils/awsSecrets');
@@ -12,6 +13,7 @@ app.use(cookieParser());
 
 app.use('/api', authRoutes);
 app.use('/api', transactionRoutes);
+app.use('/api', splitRoutes);
 
 async function startServer() {
   try {
