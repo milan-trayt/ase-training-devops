@@ -40,7 +40,7 @@ const CreateSplit = ({
     e.preventDefault();
     setSubmitting(true);
 
-    if (totals.totalAmount < splitForm.amount) {
+    if(totals.totalAmount < splitForm.amount){
       toast.error("Insufficient balance");
       setSubmitting(false);
       return;
@@ -117,7 +117,7 @@ const CreateSplit = ({
           name="participants"
           value={splitForm.participants.join(", ")}
           onChange={handleParticipantsChange}
-          placeholder="Participants Excluding You(comma separated)"
+          placeholder="Participants Excluding You (comma separated)"
           className="p-2 border rounded-lg w-full"
           required
         />
