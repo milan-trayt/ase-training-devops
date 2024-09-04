@@ -98,7 +98,7 @@ const Home = () => {
       <Balance totals={totals} loading={loading} />
       <Transaction transactions={transactions} setTransactions={setTransactions} totals={totals} calculateTotals={calculateTotals} />
       <CreateSplit splits={splits} setSplits={setSplits} transactions={transactions} setTransactions={setTransactions} calculateTotals={calculateTotals} totals={totals} />
-      <ViewSplits splits={splits} setSplits={setSplits} loading={loading} setTransactions={setTransactions} />
+      <ViewSplits splits={splits} setSplits={setSplits} loading={loading} transactions={transactions} setTransactions={setTransactions} calculateTotals={calculateTotals} />
     </div>
   );
 };
