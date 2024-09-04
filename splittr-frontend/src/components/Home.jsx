@@ -97,7 +97,7 @@ const Home = () => {
     <div className="container mx-auto p-4">
       <Balance totals={totals} loading={loading} />
       <Transaction transactions={transactions} setTransactions={setTransactions} totals={totals} calculateTotals={calculateTotals} />
-      <CreateSplit splits={splits} setSplits={setSplits} transactions={transactions} setTransactions={setTransactions} calculateTotals={calculateTotals} />
+      <CreateSplit splits={splits} setSplits={setSplits} transactions={transactions} setTransactions={setTransactions} calculateTotals={calculateTotals} totals={totals} />
       <ViewSplits splits={splits} setSplits={setSplits} loading={loading} />
     </div>
   );
