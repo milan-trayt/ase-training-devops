@@ -8,7 +8,7 @@
     "eslint": "eslint .",
     "prettier": "prettier --list-different .",
     "generate": "prisma generate",
-    "migrate:dev": "prisma migrate dev",
+    "migrate:dev": "prisma migrate dev --name init",
     "migrate:reset": "prisma migrate reset --force",
     "migrate:deploy": "prisma migrate deploy",
     "migrate:generate": "prisma generate && prisma migrate dev"
