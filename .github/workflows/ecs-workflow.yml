@@ -51,7 +51,7 @@ jobs:
       - name: Build Image
         run: |
           cd splittr-backend
-          docker build . -t ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG} --build-arg REGISTRY_URI=${REGISTRY_URI} --build-arg SECRET_PREFIX=${SECRET_PREFIX} --build-arg AWS_REGION=${AWS_REGION}  --build-arg RUN_SCHEMA_MIGRATION=${{ inputs.RUN_SCHEMA_MIGRATION }} --build-arg DATABASE_URL=${DATABASE_URL} --build-arg SCHEMA_RESET=${{ inputs.SCHEMA_RESET }}
+          docker build . -t ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG} --build-arg REGISTRY_URI=${REGISTRY_URI} --build-arg SECRET_PREFIX=${SECRET_PREFIX} --build-arg AWS_REGION=${AWS_REGION}  --build-arg RUN_SCHEMA_MIGRATION=${{ inputs.RUN_SCHEMA_MIGRATION }} --build-arg DATABASE_URL=${DATABASE_URL}
 
       - name: Push Image
         run: docker push ${REGISTRY_URI}/${IMAGE_NAME}:${IMAGE_TAG}

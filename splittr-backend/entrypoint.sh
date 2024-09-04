@@ -17,17 +17,8 @@ for secret in "${secrets_manager_secrets[@]}"; do
 done
 
 if [ "$RUN_SCHEMA_MIGRATION" = "true" ]; then
-
-  if [ "$RESET_SCHEMA" = "true" ]; then
-    npm run migrate:reset
-  fi
-  
-  if [ "$SECRET_PREFIX" = "dev" ]; then
-    npm run migrate:dev
-  else
-    npm run migrate
-  fi
-
+  echo "Running schema migrations"
+  npm run migrate:deploy
 else
   echo "Skipping schema migrations"
 fi

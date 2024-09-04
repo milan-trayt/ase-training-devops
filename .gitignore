@@ -69,3 +69,7 @@ Thumbs.db
 
 # Log files
 *.log
+
+# docker-compose files
+docker-compose.yml
+**/docker-compose.yml

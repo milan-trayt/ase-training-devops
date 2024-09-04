@@ -33,7 +33,7 @@ async function getSecrets() {
 }
 
 async function signUp(email, password, fullName) {
-  await initialize(); // Ensure initialization is complete
+  await initialize(); 
 
   let cognitoUserId;
 
@@ -93,7 +93,7 @@ async function signUp(email, password, fullName) {
 }
 
 async function confirmSignUp(email, code) {
-  await initialize(); // Ensure initialization is complete
+  await initialize(); 
 
   try {
     const user = await prisma.user.findUnique({
@@ -132,7 +132,7 @@ async function confirmSignUp(email, code) {
 }
 
 async function resendConfirmationCode(email) {
-  await initialize(); // Ensure initialization is complete
+  await initialize(); 
 
   try {
     const user = await prisma.user.findUnique({
@@ -166,7 +166,7 @@ async function resendConfirmationCode(email) {
 }
 
 async function signIn(email, password) {
-  await initialize(); // Ensure initialization is complete
+  await initialize(); 
 
   try {
     const params = {
@@ -204,7 +204,7 @@ async function signIn(email, password) {
 }
 
 async function refreshToken(refreshToken) {
-  await initialize(); // Ensure initialization is complete
+  await initialize();
 
   try {
     const params = {

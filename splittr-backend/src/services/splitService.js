@@ -1,37 +1,53 @@
 const prisma = require('../models/prismaClient');
 const transactionService = require('./transactionService');
 
+async function getSplits(userId) {
+  try {
+    return await prisma.split.findMany({
+      where: { userId },
+      include: { participants: true },
+    });
+  } catch (error) {
+    console.error('Error fetching splits:', error);
+    throw new Error('Unable to fetch splits');
+  }
+}
+
 async function createSplit({ split_name, amount, participants, userId }) {
   if (!Array.isArray(participants) || participants.length === 0) {
     throw new Error('Participants should be a non-empty array.');
   }
 
-  const amountPerParticipant = amount / participants.length;
+  const amountPerParticipant = amount / (participants.length + 1);
 
-  const split = await prisma.split.create({
-    data: {
-      name: split_name,
-      userId,
-      participants: {
-        create: participants.map(name => ({
-          name,
-          amount: amountPerParticipant,
-        })),
+  const createdSplit = await prisma.$transaction(async (prisma) => {
+    const split = await prisma.split.create({
+      data: {
+        name: split_name,
+        userId,
+        participants: {
+          create: participants.map(name => ({
+            name,
+            amount: amountPerParticipant,
+          })),
+        },
       },
-    },
-    include: {
-      participants: true,
-    },
+      include: {
+        participants: true,
+      },
+    });
+
+    await transactionService.createTransaction(
+      userId,
+      `Split created: ${split_name}`,
+      'expense',
+      amount
+    );
+
+    return split;
   });
 
-  await transactionService.createTransaction({
-    userId,
-    name: `Split created: ${split_name}`,
-    type: 'expense',
-    amount,
-  });
-
-  return split;
+  return createdSplit;
 }
 
 async function paidByOne({ splitId, participantName, amount, userId }) {
@@ -44,6 +60,7 @@ async function paidByOne({ splitId, participantName, amount, userId }) {
     throw new Error('Split not found.');
   }
 
+
   const participant = split.participants.find(p => p.name === participantName);
 
   if (!participant) {
@@ -54,12 +71,12 @@ async function paidByOne({ splitId, participantName, amount, userId }) {
     throw new Error('Amount to deduct exceeds participant\'s balance.');
   }
 
-  await transactionService.createTransaction({
+  await transactionService.createTransaction(
     userId,
-    name: `Payment for ${split.name} - ${participant.name}`,
-    type: 'income',
+    `Payment for ${split.name} - ${participant.name}`,
+    'income',
     amount,
-  });
+  );
 
   await prisma.participant.update({
     where: { id: participant.id },
@@ -69,7 +86,7 @@ async function paidByOne({ splitId, participantName, amount, userId }) {
   return { message: 'Payment recorded and participant updated' };
 }
 
-async function paidByAll({ splitId }) {
+async function paidByAll({ splitId, userId }) {
   const split = await prisma.split.findUnique({
     where: { id: splitId },
     include: { participants: true },
@@ -86,20 +103,12 @@ async function paidByAll({ splitId }) {
   }
 
   await Promise.all(participants.map(async participant => {
-    const user = await prisma.user.findUnique({
-      where: { userId: participant.name },
-    });
-
-    if (!user) {
-      throw new Error('User not found.');
-    }
-
-    await transactionService.createTransaction({
-      userId: user.userId,
-      name: `Payment for ${split.name} - ${participant.name}`,
-      type: 'income',
-      amount: participant.amount,
-    });
+    await transactionService.createTransaction(
+      userId,
+      `Payment for ${split.name} - ${participant.name}`,
+      'income',
+      participant.amount,
+    );
   }));
 
   await prisma.participant.updateMany({
@@ -111,6 +120,7 @@ async function paidByAll({ splitId }) {
 }
 
 module.exports = {
+  getSplits,
   createSplit,
   paidByAll,
   paidByOne

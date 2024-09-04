@@ -363,8 +363,8 @@ resource "aws_ecs_task_definition" "TD" {
       "name" : "api",
       "image" : "${module.api_ecr.repo_url}:latest",
       "essential" : true,
-      "cpu" : 256,
-      "memoryReservation" : 512,
+      "cpu" : 512,
+      "memoryReservation" : 1024,
       "portMappings" : [
         {
           "containerPort" : 3000,
