@@ -3,7 +3,14 @@ import PropTypes from "prop-types";
 import axiosInstance from "../../utils/axiosInstance";
 import { toast } from "react-toastify";
 
-const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
+const ViewSplits = ({
+  splits,
+  setSplits,
+  loading,
+  transactions,
+  setTransactions,
+  calculateTotals,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentParticipant, setCurrentParticipant] = useState(null);
   const [currentSplit, setCurrentSplit] = useState(null);
@@ -29,7 +36,7 @@ const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
         toast.error("Amount cannot be greater than remaining balance");
         setSubmittingParticipantAmount(false);
         return;
-      }else if (parseInt(amountReceived) <= 0) {
+      } else if (parseInt(amountReceived) <= 0) {
         toast.error("Amount should be greater than 0");
         setSubmittingParticipantAmount(false);
         return;
@@ -59,15 +66,17 @@ const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
                 : split
             )
           );
-          setTransactions((prevTransactions) => [
-            ...prevTransactions,
+          const updatedTransaction = [
+            ...transactions,
             {
               type: "income",
               amount: parseInt(amountReceived),
               description: `Payment for ${currentSplit.name} - ${currentParticipant.name}`,
               date: new Date().toISOString(),
             },
-          ]);
+          ]
+          setTransactions(updatedTransaction);
+          calculateTotals(updatedTransaction);
           closeModal();
         })
         .catch(() => {
@@ -96,15 +105,17 @@ const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
               : split
           )
         );
-        setTransactions((prevTransactions) => [
-          ...prevTransactions,
+        const updatedTransaction = [
+          ...transactions,
           {
             type: "income",
             amount: totalAmount,
-            description: `Payment for Split ${splitId}`,
+            description: `Payment for ${splitId}`,
             date: new Date().toISOString(),
           },
-        ]);
+        ]
+        setTransactions(updatedTransaction);
+        calculateTotals(updatedTransaction);
         toast.success("Marked all received successfully");
       })
       .catch((error) => {
@@ -131,7 +142,8 @@ const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
                     (acc, participant) => acc + participant.amount,
                     0
                   ) > 0
-              ).reverse()
+              )
+              .reverse()
               .map((split, idx) => {
                 // Calculate the total amount of all participants
                 const totalAmount = split.participants.reduce(
@@ -230,6 +242,7 @@ ViewSplits.propTypes = {
   loading: PropTypes.bool.isRequired,
   transactions: PropTypes.array.isRequired,
   setTransactions: PropTypes.func.isRequired,
+  calculateTotals: PropTypes.func.isRequired,
 };
 
 export default ViewSplits;
