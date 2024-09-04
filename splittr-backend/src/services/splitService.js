@@ -8,7 +8,7 @@ async function createSplit({ split_name, amount, participants, userId }) {
 
   const amountPerParticipant = amount / participants.length;
 
-  return prisma.split.create({
+  const split = await prisma.split.create({
     data: {
       name: split_name,
       userId,
@@ -23,6 +23,15 @@ async function createSplit({ split_name, amount, participants, userId }) {
       participants: true,
     },
   });
+
+  await transactionService.createTransaction({
+    userId,
+    name: `Split created: ${split_name}`,
+    type: 'expense',
+    amount,
+  });
+
+  return split;
 }
 
 async function paidByOne({ splitId, participantName, amount, userId }) {
