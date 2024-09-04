@@ -9,6 +9,7 @@ const CreateSplit = ({
   transactions,
   setTransactions,
   calculateTotals,
+  totals,
 }) => {
   const [splitForm, setSplitForm] = useState({
     split_name: "",
@@ -38,6 +39,12 @@ const CreateSplit = ({
   const handleSplitSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+
+    if (totals.totalAmount < splitForm.amount) {
+      toast.error("Insufficient balance");
+      setSubmitting(false);
+      return;
+    }
 
     if (splitForm.participants.length === 0 || splitForm.amount <= 0) {
       toast.error("Please enter valid split details");
@@ -110,7 +117,7 @@ const CreateSplit = ({
           name="participants"
           value={splitForm.participants.join(", ")}
           onChange={handleParticipantsChange}
-          placeholder="Participants (comma separated)"
+          placeholder="Participants Excluding You(comma separated)"
           className="p-2 border rounded-lg w-full"
           required
         />
@@ -137,4 +144,5 @@ CreateSplit.propTypes = {
   transactions: PropTypes.array.isRequired,
   setTransactions: PropTypes.func.isRequired,
   calculateTotals: PropTypes.func.isRequired,
+  totals: PropTypes.object.isRequired,
 };
