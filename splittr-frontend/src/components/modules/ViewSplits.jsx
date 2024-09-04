@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import axiosInstance from "../../utils/axiosInstance";
 import { toast } from "react-toastify";
 
-const ViewSplits = ({ splits, setSplits, loading }) => {
+const ViewSplits = ({ splits, setSplits, loading, setTransactions }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentParticipant, setCurrentParticipant] = useState(null);
   const [currentSplit, setCurrentSplit] = useState(null);
@@ -51,7 +51,7 @@ const ViewSplits = ({ splits, setSplits, loading }) => {
                       participant.name === currentParticipant.name
                         ? {
                             ...participant,
-                            amount: participant.amount - amountReceived, // Deduct the amount
+                            amount: participant.amount - amountReceived,
                           }
                         : participant
                     ),
@@ -59,6 +59,15 @@ const ViewSplits = ({ splits, setSplits, loading }) => {
                 : split
             )
           );
+          setTransactions((prevTransactions) => [
+            ...prevTransactions,
+            {
+              type: "income",
+              amount: parseInt(amountReceived),
+              description: `Payment for ${currentSplit.name} - ${currentParticipant.name}`,
+              date: new Date().toISOString(),
+            },
+          ]);
           closeModal();
         })
         .catch(() => {
@@ -70,7 +79,7 @@ const ViewSplits = ({ splits, setSplits, loading }) => {
     }
   };
 
-  const markAllReceived = (splitId) => {
+  const markAllReceived = (splitId, totalAmount) => {
     axiosInstance
       .post("paidByAll", { splitId })
       .then(() => {
@@ -87,6 +96,15 @@ const ViewSplits = ({ splits, setSplits, loading }) => {
               : split
           )
         );
+        setTransactions((prevTransactions) => [
+          ...prevTransactions,
+          {
+            type: "income",
+            amount: totalAmount,
+            description: `Payment for Split ${splitId}`,
+            date: new Date().toISOString(),
+          },
+        ]);
         toast.success("Marked all received successfully");
       })
       .catch((error) => {
@@ -129,7 +147,7 @@ const ViewSplits = ({ splits, setSplits, loading }) => {
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-lg font-semibold">{split.name}</h3>
                       <button
-                        onClick={() => markAllReceived(split.id)}
+                        onClick={() => markAllReceived(split.id, totalAmount)}
                         disabled={split.participants.every(
                           (p) => p.amount === 0
                         )} // Disable if all amounts are 0
@@ -210,6 +228,8 @@ ViewSplits.propTypes = {
   splits: PropTypes.array.isRequired,
   setSplits: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
+  transactions: PropTypes.array.isRequired,
+  setTransactions: PropTypes.func.isRequired,
 };
 
 export default ViewSplits;
