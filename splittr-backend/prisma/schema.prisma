@@ -14,14 +14,32 @@ model User {
   fullName      String
   verified      Boolean      @default(false)
   transactions  Transaction[]
+  splits        Split[]
 }
 
 model Transaction {
   id        Int      @id @default(autoincrement())
-  userId     String
+  userId    String
   name      String
   type      String
   amount    Float
   date      DateTime @default(now())
   user      User     @relation(fields: [userId], references: [userId])
+}
+
+model Split {
+  id            Int      @id @default(autoincrement())
+  userId        String
+  name          String
+  date          DateTime @default(now())
+  participants  Participant[]
+  user          User      @relation(fields: [userId], references: [userId])
+}
+
+model Participant {
+  id        Int      @id @default(autoincrement())
+  splitId   Int
+  name      String
+  amount    Float
+  split     Split    @relation(fields: [splitId], references: [id])
 }
